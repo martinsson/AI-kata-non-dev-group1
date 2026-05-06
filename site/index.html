@@ -1,3 +1,183 @@
 <!doctype html>
-<title>Bonjour</title>
-<h1>Bonjour le monde !</h1>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fête du quartier</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: system-ui, sans-serif;
+      background: #fef9ec;
+      color: #333;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.08);
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      font-size: 1.8rem;
+      color: #e06c1f;
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      text-align: center;
+      color: #777;
+      margin-bottom: 2rem;
+      font-size: 0.95rem;
+    }
+    .form-group {
+      margin-bottom: 1.2rem;
+    }
+    label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 0.4rem;
+      font-size: 0.9rem;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #e06c1f;
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    .row { display: flex; gap: 1rem; }
+    .row .form-group { flex: 1; }
+    .checkbox-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      margin-top: 0.4rem;
+    }
+    .checkbox-group label {
+      font-weight: normal;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      cursor: pointer;
+    }
+    .checkbox-group input[type="checkbox"] {
+      width: auto;
+    }
+    button[type="submit"] {
+      width: 100%;
+      padding: 0.85rem;
+      background: #e06c1f;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      margin-top: 0.5rem;
+      transition: background 0.2s;
+    }
+    button[type="submit"]:hover { background: #c55a10; }
+    .success {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+      color: #2d7a2d;
+      font-size: 1.1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎉 Fête du quartier</h1>
+    <p class="subtitle">Inscrivez-vous et dites-nous ce que vous apportez !</p>
+
+    <form id="fete-form">
+      <div class="row">
+        <div class="form-group">
+          <label for="prenom">Prénom *</label>
+          <input type="text" id="prenom" name="prenom" required placeholder="Marie">
+        </div>
+        <div class="form-group">
+          <label for="nom">Nom *</label>
+          <input type="text" id="nom" name="nom" required placeholder="Dupont">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="email">E-mail *</label>
+        <input type="email" id="email" name="email" required placeholder="marie@exemple.fr">
+      </div>
+
+      <div class="form-group">
+        <label for="telephone">Téléphone</label>
+        <input type="tel" id="telephone" name="telephone" placeholder="06 12 34 56 78">
+      </div>
+
+      <div class="form-group">
+        <label for="adresse">Adresse dans le quartier</label>
+        <input type="text" id="adresse" name="adresse" placeholder="12 rue des Lilas">
+      </div>
+
+      <div class="form-group">
+        <label for="nb_personnes">Nombre de personnes (vous inclus) *</label>
+        <select id="nb_personnes" name="nb_personnes" required>
+          <option value="">-- Choisir --</option>
+          <option value="1">1 personne</option>
+          <option value="2">2 personnes</option>
+          <option value="3">3 personnes</option>
+          <option value="4">4 personnes</option>
+          <option value="5+">5 personnes ou plus</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Je peux apporter…</label>
+        <div class="checkbox-group">
+          <label><input type="checkbox" name="apport" value="plat_sale"> Un plat salé</label>
+          <label><input type="checkbox" name="apport" value="dessert"> Un dessert</label>
+          <label><input type="checkbox" name="apport" value="boissons"> Des boissons</label>
+          <label><input type="checkbox" name="apport" value="barbecue"> Un barbecue</label>
+          <label><input type="checkbox" name="apport" value="chaises"> Des chaises / tables</label>
+          <label><input type="checkbox" name="apport" value="musique"> De la musique</label>
+          <label><input type="checkbox" name="apport" value="jeux"> Des jeux</label>
+          <label><input type="checkbox" name="apport" value="rien"> Rien pour l'instant</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="allergies">Allergies ou régimes alimentaires</label>
+        <input type="text" id="allergies" name="allergies" placeholder="Ex : sans gluten, végétarien…">
+      </div>
+
+      <div class="form-group">
+        <label for="commentaire">Commentaire ou suggestion</label>
+        <textarea id="commentaire" name="commentaire" placeholder="Une idée d'animation, une question…"></textarea>
+      </div>
+
+      <button type="submit">S'inscrire à la fête</button>
+    </form>
+
+    <div class="success" id="success-msg">
+      Merci pour votre inscription ! On a hâte de vous retrouver 🎊
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('fete-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      this.style.display = 'none';
+      document.getElementById('success-msg').style.display = 'block';
+    });
+  </script>
+</body>
+</html>
