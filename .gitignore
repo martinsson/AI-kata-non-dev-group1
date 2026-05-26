@@ -9,5 +9,18 @@
 # Logs
 *.log
 
-# Node (in case you add tooling later)
+# Node
 node_modules/
+dist/
+build/
+
+# Local SQLite data
+data/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Env
+.env
+.env.local

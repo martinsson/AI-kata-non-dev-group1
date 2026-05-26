@@ -1,0 +1,10 @@
+{
+  "name": "ai-kata-non-dev-group1",
+  "private": true,
+  "scripts": {
+    "dev:api": "pnpm --filter api dev",
+    "dev:web": "pnpm --filter web dev",
+    "build": "pnpm -r build"
+  },
+  "packageManager": "pnpm@9.0.0"
+}
