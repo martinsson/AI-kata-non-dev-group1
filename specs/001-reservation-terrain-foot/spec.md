@@ -76,12 +76,13 @@ Un gestionnaire souhaite configurer les terrains disponibles et définir les pla
 - **FR-008**: Le système DOIT empêcher la réservation ou l'annulation d'un créneau passé
 - **FR-009**: Un gestionnaire DOIT pouvoir ajouter, modifier et supprimer des terrains
 - **FR-010**: Un gestionnaire DOIT pouvoir définir les créneaux horaires disponibles par terrain
+- **FR-012**: Chaque créneau DOIT avoir une durée fixe de 2 heures ; aucune autre durée n'est autorisée
 - **FR-011**: Le système DOIT persister les données localement entre les sessions
 
 ### Key Entities
 
 - **Terrain** : Nom, description optionnelle, liste de créneaux horaires récurrents
-- **Créneau** : Heure de début, durée, statut (libre / réservé / passé), lien vers une réservation éventuelle
+- **Créneau** : Heure de début, durée fixe de 2 heures, statut (libre / réservé / passé), lien vers une réservation éventuelle
 - **Réservation** : Code unique, terrain, date, créneau, nom du joueur, téléphone (optionnel), horodatage de création
 
 ## Success Criteria *(mandatory)*
@@ -99,6 +100,6 @@ Un gestionnaire souhaite configurer les terrains disponibles et définir les pla
 - L'application est destinée à un seul équipement sportif (un club ou une association), pas à une place de marché multi-sites
 - Il n'y a pas d'authentification utilisateur : l'accès gestionnaire est protégé par un simple mot de passe ou un accès direct (sans compte)
 - Les données sont persistées localement dans le navigateur (localStorage) ; aucun backend n'est requis pour le MVP
-- Les créneaux sont définis à l'avance par le gestionnaire (pas de réservation sur mesure avec heure libre)
+- Les créneaux sont définis à l'avance par le gestionnaire (pas de réservation sur mesure avec heure libre) et ont tous une durée fixe de 2 heures
 - Le support mobile est inclus dans le périmètre (responsive design)
 - Les paiements en ligne sont hors périmètre pour cette version
