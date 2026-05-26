@@ -9,15 +9,15 @@
 
 ### User Story 1 - Réserver un créneau (Priority: P1)
 
-Un joueur souhaite réserver un terrain de foot pour une date et un horaire donnés. Il consulte les créneaux disponibles, choisit un terrain et un créneau libre, saisit ses informations, et confirme sa réservation.
+Un joueur souhaite réserver un terrain de foot pour une date et un horaire donnés. Il consulte la liste de tous les terrains disponibles (tous sites confondus), filtre ou parcourt les terrains, choisit un créneau libre, saisit ses informations, et confirme sa réservation.
 
 **Why this priority**: C'est la fonctionnalité centrale de l'application. Sans elle, rien d'autre n'a de valeur.
 
-**Independent Test**: Peut être testé en ouvrant l'application, en sélectionnant un terrain et un créneau, en renseignant un nom et en validant — la réservation apparaît dans la liste des réservations du jour.
+**Independent Test**: Peut être testé en ouvrant l'application, en sélectionnant un terrain parmi la liste multi-sites et un créneau, en renseignant un nom et en validant — la réservation apparaît confirmée.
 
 **Acceptance Scenarios**:
 
-1. **Given** la liste des terrains avec leurs créneaux du jour, **When** je sélectionne un créneau libre et je valide avec mon nom, **Then** la réservation est confirmée et le créneau passe à "réservé"
+1. **Given** la liste de tous les terrains avec leurs créneaux du jour, **When** je sélectionne un créneau libre sur n'importe quel terrain et je valide avec mon nom, **Then** la réservation est confirmée et le créneau passe à "réservé"
 2. **Given** un créneau déjà réservé, **When** je tente de le sélectionner, **Then** le créneau est grisé et non sélectionnable
 3. **Given** le formulaire de réservation, **When** je soumets sans renseigner mon nom, **Then** le formulaire signale le champ comme requis et ne valide pas
 
@@ -41,17 +41,18 @@ Un joueur qui a réservé un terrain souhaite retrouver sa réservation et, si n
 
 ### User Story 3 - Gérer les terrains et créneaux (Priority: P3)
 
-Un gestionnaire souhaite configurer les terrains disponibles et définir les plages horaires proposées à la réservation.
+Un gestionnaire souhaite configurer l'ensemble des terrains disponibles sur la plateforme (tous sites confondus) et définir les plages horaires proposées à la réservation pour chacun.
 
-**Why this priority**: Permet à l'opérateur de l'application d'adapter l'offre à la réalité de son équipement sportif.
+**Why this priority**: Permet à l'opérateur de la plateforme d'adapter l'offre à la réalité des équipements sportifs référencés.
 
-**Independent Test**: Peut être testé en accédant à la vue d'administration, en ajoutant un terrain avec ses créneaux — les créneaux apparaissent immédiatement dans la vue publique.
+**Independent Test**: Peut être testé en accédant à la vue d'administration, en ajoutant un terrain avec ses créneaux — le terrain apparaît immédiatement dans la vue publique aux côtés des autres.
 
 **Acceptance Scenarios**:
 
-1. **Given** la vue d'administration, **When** j'ajoute un terrain avec un nom et une liste de créneaux horaires, **Then** le terrain et ses créneaux sont visibles par les joueurs
-2. **Given** un terrain existant, **When** je modifie son nom ou ses créneaux, **Then** les changements sont répercutés immédiatement
+1. **Given** la vue d'administration, **When** j'ajoute un terrain avec un nom, un lieu et une liste de créneaux horaires, **Then** le terrain et ses créneaux sont visibles par les joueurs
+2. **Given** un terrain existant, **When** je modifie son nom, son lieu ou ses créneaux, **Then** les changements sont répercutés immédiatement
 3. **Given** un terrain sans réservation active, **When** je le supprime, **Then** il disparaît de la liste publique
+4. **Given** 10 terrains déjà enregistrés, **When** j'essaie d'en ajouter un 11ème, **Then** le système m'indique que la limite de 10 terrains est atteinte
 
 ---
 
@@ -66,7 +67,7 @@ Un gestionnaire souhaite configurer les terrains disponibles et définir les pla
 
 ### Functional Requirements
 
-- **FR-001**: Le système DOIT afficher la liste des terrains disponibles avec leurs créneaux du jour
+- **FR-001**: Le système DOIT afficher la liste de tous les terrains (tous sites confondus) avec leurs créneaux du jour
 - **FR-002**: Le système DOIT permettre de naviguer entre les dates (jour précédent / suivant)
 - **FR-003**: Le système DOIT distinguer visuellement les créneaux libres, réservés et passés
 - **FR-004**: Un joueur DOIT pouvoir réserver un créneau libre en renseignant son nom (et optionnellement son numéro de téléphone)
@@ -74,14 +75,15 @@ Un gestionnaire souhaite configurer les terrains disponibles et définir les pla
 - **FR-006**: Un joueur DOIT pouvoir retrouver et annuler sa réservation via son code unique
 - **FR-007**: Le système DOIT empêcher la réservation d'un créneau déjà pris
 - **FR-008**: Le système DOIT empêcher la réservation ou l'annulation d'un créneau passé
-- **FR-009**: Un gestionnaire DOIT pouvoir ajouter, modifier et supprimer des terrains
+- **FR-009**: Un gestionnaire DOIT pouvoir ajouter, modifier et supprimer des terrains (tous sites)
 - **FR-010**: Un gestionnaire DOIT pouvoir définir les créneaux horaires disponibles par terrain
-- **FR-012**: Chaque créneau DOIT avoir une durée fixe de 2 heures ; aucune autre durée n'est autorisée
 - **FR-011**: Le système DOIT persister les données localement entre les sessions
+- **FR-012**: Chaque créneau DOIT avoir une durée fixe de 2 heures ; aucune autre durée n'est autorisée
+- **FR-013**: La plateforme DOIT prendre en charge au maximum 10 terrains ; toute tentative d'ajout au-delà est bloquée avec un message explicite
 
 ### Key Entities
 
-- **Terrain** : Nom, description optionnelle, liste de créneaux horaires récurrents
+- **Terrain** : Nom, lieu (ville/quartier), description optionnelle, type de surface, liste de créneaux horaires récurrents
 - **Créneau** : Heure de début, durée fixe de 2 heures, statut (libre / réservé / passé), lien vers une réservation éventuelle
 - **Réservation** : Code unique, terrain, date, créneau, nom du joueur, téléphone (optionnel), horodatage de création
 
@@ -116,7 +118,8 @@ Ces données sont modifiables par le gestionnaire après le premier lancement.
 
 ## Assumptions
 
-- L'application est destinée à un seul équipement sportif (un club ou une association), pas à une place de marché multi-sites
+- L'application couvre plusieurs sites (multi-terrains, multi-lieux) ; elle est gérée par un seul opérateur central, pas par des gestionnaires indépendants par site
+- La plateforme est dimensionnée pour 10 terrains maximum ; cette limite est volontaire et non technique
 - Il n'y a pas d'authentification utilisateur : l'accès gestionnaire est protégé par un simple mot de passe ou un accès direct (sans compte)
 - Les données sont persistées localement dans le navigateur (localStorage) ; aucun backend n'est requis pour le MVP
 - Les créneaux sont définis à l'avance par le gestionnaire (pas de réservation sur mesure avec heure libre) et ont tous une durée fixe de 2 heures
