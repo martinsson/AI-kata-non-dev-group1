@@ -156,31 +156,39 @@ body {
 .icon-btn:hover { background: var(--gray-100); }
 .icon-btn svg { width: 18px; height: 18px; }
 
-/* ── Terrains grid ────────────────────────────────── */
-.terrains-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 16px;
+/* ── Terrains list (landing) ──────────────────────── */
+.terrains-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-/* ── Terrain card ─────────────────────────────────── */
-.terrain-card {
+.terrain-list-card {
   background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--radius);
-  overflow: hidden;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
   box-shadow: var(--shadow);
+  cursor: pointer;
+  transition: border-color .15s, box-shadow .15s;
+}
+.terrain-list-card:hover {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(22,163,74,.1);
 }
 
-.terrain-card-head {
-  padding: 14px 16px 10px;
-  border-bottom: 1px solid var(--gray-100);
-}
+.terrain-list-info { flex: 1; min-width: 0; }
 
 .terrain-name {
   font-weight: 700;
   font-size: 15px;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .terrain-meta {
@@ -190,6 +198,88 @@ body {
   align-items: center;
 }
 
+.terrain-list-avail {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.avail-yes { color: var(--green); }
+.avail-no  { color: var(--gray-400); }
+
+.terrain-list-arrow { color: var(--gray-400); flex-shrink: 0; }
+.terrain-list-arrow svg { width: 18px; height: 18px; }
+
+/* ── Slots view ───────────────────────────────────── */
+.terrain-detail-header {
+  background: #fff;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius);
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  box-shadow: var(--shadow);
+}
+
+.terrain-detail-name {
+  font-weight: 700;
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.slots-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+}
+
+.slot-card {
+  background: #fff;
+  border: 1.5px solid transparent;
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: background .12s, border-color .12s, transform .1s;
+  box-shadow: var(--shadow);
+}
+.slot-card:active { transform: scale(.97); }
+
+.slot-card .slot-time {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+.slot-card .slot-duration {
+  font-size: 11px;
+  color: var(--gray-400);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+
+.slot-free {
+  background: var(--green-light);
+  border-color: #86efac;
+  color: var(--green-dark);
+}
+.slot-free:hover { background: #bbf7d0; border-color: var(--green); }
+
+.slot-taken {
+  background: var(--gray-100);
+  border-color: var(--gray-200);
+  color: var(--gray-400);
+  cursor: not-allowed;
+}
+.slot-taken .slot-time { text-decoration: line-through; }
+
+.slot-past {
+  background: var(--gray-50);
+  border-color: var(--gray-100);
+  color: var(--gray-400);
+  cursor: not-allowed;
+  font-style: italic;
+}
+
+/* ── Badges ───────────────────────────────────────── */
 .badge {
   display: inline-flex;
   align-items: center;
@@ -205,49 +295,6 @@ body {
 .badge-location { background: var(--gray-100); color: var(--gray-600); }
 .badge-surface-synth { background: #dbeafe; color: #1d4ed8; }
 .badge-surface-gazon { background: #dcfce7; color: #15803d; }
-
-.slots-list {
-  padding: 10px 16px 14px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.slot {
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  font-weight: 600;
-  border: 1.5px solid transparent;
-  cursor: pointer;
-  transition: background .12s, transform .1s;
-  white-space: nowrap;
-}
-
-.slot:active { transform: scale(.96); }
-
-.slot-free {
-  background: var(--green-light);
-  color: var(--green-dark);
-  border-color: #86efac;
-}
-.slot-free:hover { background: #bbf7d0; }
-
-.slot-taken {
-  background: var(--gray-100);
-  color: var(--gray-400);
-  border-color: var(--gray-200);
-  cursor: not-allowed;
-  text-decoration: line-through;
-}
-
-.slot-past {
-  background: var(--gray-50);
-  color: var(--gray-400);
-  border-color: var(--gray-100);
-  cursor: not-allowed;
-  font-style: italic;
-}
 
 /* ── Lookup ───────────────────────────────────────── */
 .lookup-card {
