@@ -17,7 +17,7 @@
         <span>Foot Genève</span>
       </div>
       <nav class="header-nav">
-        <button class="nav-btn active" data-view="booking">Réserver</button>
+        <button class="nav-btn active" data-view="terrains">Terrains</button>
         <button class="nav-btn" data-view="my-reservation">Ma réservation</button>
         <button class="nav-btn" data-view="admin">Gestion</button>
       </nav>
@@ -26,7 +26,7 @@
       </button>
     </div>
     <div class="mobile-nav" id="mobile-nav">
-      <button class="nav-btn active" data-view="booking">Réserver</button>
+      <button class="nav-btn active" data-view="terrains">Terrains</button>
       <button class="nav-btn" data-view="my-reservation">Ma réservation</button>
       <button class="nav-btn" data-view="admin">Gestion</button>
     </div>
@@ -34,17 +34,33 @@
 
   <main class="main">
 
-    <!-- ===== VUE : RÉSERVER ===== -->
-    <div id="view-booking" class="view active">
+    <!-- ===== VUE : LISTE DES TERRAINS ===== -->
+    <div id="view-terrains" class="view active">
       <div class="view-header">
-        <h1>Réserver un terrain</h1>
+        <h1>Terrains disponibles</h1>
         <div class="date-nav">
           <button class="icon-btn" id="prev-day"><i data-lucide="chevron-left"></i></button>
           <span class="current-date" id="current-date"></span>
           <button class="icon-btn" id="next-day"><i data-lucide="chevron-right"></i></button>
         </div>
       </div>
-      <div class="terrains-grid" id="terrains-grid"></div>
+      <div class="terrains-list" id="terrains-list"></div>
+    </div>
+
+    <!-- ===== VUE : CRÉNEAUX D'UN TERRAIN ===== -->
+    <div id="view-slots" class="view">
+      <div class="view-header">
+        <button class="btn btn-ghost btn-sm" id="back-btn">
+          <i data-lucide="arrow-left"></i> Retour
+        </button>
+        <div class="date-nav">
+          <button class="icon-btn" id="slots-prev-day"><i data-lucide="chevron-left"></i></button>
+          <span class="current-date" id="slots-current-date"></span>
+          <button class="icon-btn" id="slots-next-day"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div id="terrain-detail-header" class="terrain-detail-header"></div>
+      <div class="slots-grid" id="slots-grid"></div>
     </div>
 
     <!-- ===== VUE : MA RÉSERVATION ===== -->
@@ -80,7 +96,7 @@
   <div class="modal-backdrop" id="modal-reserve" hidden>
     <div class="modal">
       <div class="modal-header">
-        <h2 id="modal-title">Réserver</h2>
+        <h2>Réserver un créneau</h2>
         <button class="icon-btn" id="modal-close"><i data-lucide="x"></i></button>
       </div>
       <div class="modal-body">
