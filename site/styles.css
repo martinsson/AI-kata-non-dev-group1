@@ -57,11 +57,7 @@ body {
 }
 .brand svg { width: 22px; height: 22px; }
 
-.header-nav {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-}
+.header-nav { display: flex; gap: 4px; flex: 1; }
 
 .nav-btn {
   background: none;
@@ -74,7 +70,7 @@ body {
   color: var(--gray-600);
   transition: background .15s, color .15s;
 }
-.nav-btn:hover { background: var(--gray-100); color: var(--gray-900); }
+.nav-btn:hover  { background: var(--gray-100); color: var(--gray-900); }
 .nav-btn.active { background: var(--green-light); color: var(--green-dark); }
 
 .hamburger {
@@ -118,10 +114,7 @@ body {
   margin-bottom: 24px;
 }
 
-.view-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-}
+.view-header h1 { font-size: 22px; font-weight: 700; }
 
 /* ── Date nav ─────────────────────────────────────── */
 .date-nav {
@@ -137,7 +130,7 @@ body {
 .current-date {
   font-weight: 600;
   font-size: 14px;
-  min-width: 160px;
+  min-width: 180px;
   text-align: center;
 }
 
@@ -156,125 +149,109 @@ body {
 .icon-btn:hover { background: var(--gray-100); }
 .icon-btn svg { width: 18px; height: 18px; }
 
-/* ── Terrains list (landing) ──────────────────────── */
-.terrains-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.terrain-list-card {
+/* ── Booking table ────────────────────────────────── */
+.booking-table {
   background: #fff;
   border: 1px solid var(--gray-200);
   border-radius: var(--radius);
-  padding: 16px 20px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
   box-shadow: var(--shadow);
-  cursor: pointer;
-  transition: border-color .15s, box-shadow .15s;
-}
-.terrain-list-card:hover {
-  border-color: var(--green);
-  box-shadow: 0 0 0 3px rgba(22,163,74,.1);
-}
-
-.terrain-list-info { flex: 1; min-width: 0; }
-
-.terrain-name {
-  font-weight: 700;
-  font-size: 15px;
-  margin-bottom: 6px;
-  white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.terrain-meta {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.terrain-list-avail {
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.avail-yes { color: var(--green); }
-.avail-no  { color: var(--gray-400); }
-
-.terrain-list-arrow { color: var(--gray-400); flex-shrink: 0; }
-.terrain-list-arrow svg { width: 18px; height: 18px; }
-
-/* ── Slots view ───────────────────────────────────── */
-.terrain-detail-header {
-  background: #fff;
-  border: 1px solid var(--gray-200);
-  border-radius: var(--radius);
-  padding: 16px 20px;
-  margin-bottom: 20px;
-  box-shadow: var(--shadow);
-}
-
-.terrain-detail-name {
-  font-weight: 700;
-  font-size: 18px;
-  margin-bottom: 6px;
-}
-
-.slots-grid {
+.booking-row {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: 220px 90px 90px 1fr;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid var(--gray-100);
+  min-height: 56px;
 }
+.booking-row:last-child { border-bottom: none; }
+.booking-row:hover { background: var(--gray-50); }
 
-.slot-card {
-  background: #fff;
-  border: 1.5px solid transparent;
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: background .12s, border-color .12s, transform .1s;
-  box-shadow: var(--shadow);
+.booking-header {
+  background: var(--gray-50);
+  border-bottom: 2px solid var(--gray-200) !important;
 }
-.slot-card:active { transform: scale(.97); }
+.booking-header:hover { background: var(--gray-50); }
 
-.slot-card .slot-time {
-  font-size: 16px;
+.brow-cell {
+  padding: 10px 14px;
+  font-size: 13px;
+  border-right: 1px solid var(--gray-100);
+}
+.brow-cell:last-child { border-right: none; }
+
+.brow-name {
   font-weight: 700;
-  margin-bottom: 2px;
+  font-size: 13px;
+  line-height: 1.3;
 }
-.slot-card .slot-duration {
+
+.brow-lieu {
+  color: var(--gray-600);
+  font-size: 12px;
+}
+
+.brow-surface-synth {
+  color: #1d4ed8;
+  font-weight: 600;
+  font-size: 12px;
+}
+.brow-surface-gazon {
+  color: var(--green-dark);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.brow-header-label {
+  font-weight: 700;
   font-size: 11px;
-  color: var(--gray-400);
   text-transform: uppercase;
-  letter-spacing: .04em;
+  letter-spacing: .05em;
+  color: var(--gray-600);
 }
+
+.brow-slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 14px;
+}
+
+/* ── Slot chips ───────────────────────────────────── */
+.slot-chip {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1.5px solid transparent;
+  white-space: nowrap;
+  transition: background .12s, transform .1s;
+  line-height: 1.4;
+}
+.slot-chip:active { transform: scale(.95); }
 
 .slot-free {
   background: var(--green-light);
-  border-color: #86efac;
   color: var(--green-dark);
+  border-color: #86efac;
+  cursor: pointer;
 }
 .slot-free:hover { background: #bbf7d0; border-color: var(--green); }
 
 .slot-taken {
   background: var(--gray-100);
-  border-color: var(--gray-200);
   color: var(--gray-400);
+  border-color: var(--gray-200);
   cursor: not-allowed;
+  text-decoration: line-through;
 }
-.slot-taken .slot-time { text-decoration: line-through; }
 
 .slot-past {
   background: var(--gray-50);
+  color: var(--gray-300, #d1d5db);
   border-color: var(--gray-100);
-  color: var(--gray-400);
   cursor: not-allowed;
   font-style: italic;
 }
@@ -292,26 +269,15 @@ body {
   letter-spacing: .03em;
 }
 .badge svg { width: 11px; height: 11px; }
-.badge-location { background: var(--gray-100); color: var(--gray-600); }
+.badge-location    { background: var(--gray-100); color: var(--gray-600); }
 .badge-surface-synth { background: #dbeafe; color: #1d4ed8; }
 .badge-surface-gazon { background: #dcfce7; color: #15803d; }
 
 /* ── Lookup ───────────────────────────────────────── */
-.lookup-card {
-  max-width: 480px;
-}
+.lookup-card  { max-width: 480px; }
+.lookup-hint  { color: var(--gray-600); margin-bottom: 16px; }
 
-.lookup-hint {
-  color: var(--gray-600);
-  margin-bottom: 16px;
-}
-
-.input-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
+.input-row { display: flex; gap: 8px; margin-bottom: 20px; }
 .input-row .input { flex: 1; }
 
 .lookup-result-box {
@@ -320,18 +286,9 @@ body {
   padding: 16px;
   margin-top: 4px;
 }
+.lookup-result-box h3 { font-size: 15px; margin-bottom: 10px; }
 
-.lookup-result-box h3 {
-  font-size: 15px;
-  margin-bottom: 10px;
-}
-
-.result-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 6px;
-  font-size: 13px;
-}
+.result-row { display: flex; gap: 8px; margin-bottom: 6px; font-size: 13px; }
 .result-label { color: var(--gray-600); min-width: 80px; }
 .result-value { font-weight: 600; }
 
@@ -342,12 +299,7 @@ body {
 }
 
 /* ── Admin list ───────────────────────────────────── */
-.admin-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-bottom: 12px;
-}
+.admin-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
 
 .admin-row {
   background: #fff;
@@ -370,20 +322,10 @@ body {
   text-overflow: ellipsis;
 }
 
-.admin-row-meta {
-  display: flex;
-  gap: 6px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
+.admin-row-meta { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
 .admin-row-actions { display: flex; gap: 6px; flex-shrink: 0; }
 
-.terrain-count {
-  font-size: 13px;
-  color: var(--gray-600);
-  text-align: right;
-}
+.terrain-count { font-size: 13px; color: var(--gray-600); text-align: right; }
 .terrain-count.at-limit { color: var(--red); font-weight: 600; }
 
 /* ── Card ─────────────────────────────────────────── */
@@ -411,28 +353,16 @@ body {
 }
 .btn svg { width: 15px; height: 15px; }
 
-.btn-primary {
-  background: var(--green);
-  color: #fff;
-  border-color: var(--green-dark);
-}
+.btn-primary  { background: var(--green); color: #fff; border-color: var(--green-dark); }
 .btn-primary:hover { background: var(--green-dark); }
 
-.btn-ghost {
-  background: #fff;
-  color: var(--gray-700);
-  border-color: var(--gray-200);
-}
+.btn-ghost    { background: #fff; color: var(--gray-700); border-color: var(--gray-200); }
 .btn-ghost:hover { background: var(--gray-100); }
 
-.btn-danger {
-  background: #fff;
-  color: var(--red);
-  border-color: #fca5a5;
-}
+.btn-danger   { background: #fff; color: var(--red); border-color: #fca5a5; }
 .btn-danger:hover { background: var(--red-light); }
 
-.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-sm  { padding: 5px 10px; font-size: 12px; }
 .btn.full { width: 100%; justify-content: center; }
 
 /* ── Inputs ───────────────────────────────────────── */
@@ -449,19 +379,13 @@ body {
 }
 .input:focus { border-color: var(--green); }
 .input.error { border-color: var(--red); }
-
 .textarea { resize: vertical; min-height: 110px; }
 
 /* ── Fields ───────────────────────────────────────── */
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
+.field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field span { font-weight: 600; font-size: 13px; }
 .required { color: var(--red); }
-.optional { color: var(--gray-400); font-weight: 400; }
+.optional  { color: var(--gray-400); font-weight: 400; }
 
 /* ── Modal ────────────────────────────────────────── */
 .modal-backdrop {
@@ -484,7 +408,6 @@ body {
   box-shadow: var(--shadow-lg);
   animation: modal-in .18s ease;
 }
-
 .modal-sm { max-width: 360px; }
 
 @keyframes modal-in {
@@ -525,10 +448,7 @@ body {
 .slot-summary strong { display: block; font-size: 15px; margin-bottom: 4px; }
 
 /* ── Confirmation ─────────────────────────────────── */
-.success-icon {
-  color: var(--green);
-  margin: 0 auto 12px;
-}
+.success-icon { color: var(--green); margin: 0 auto 12px; }
 .success-icon svg { width: 52px; height: 52px; }
 
 .confirm-label { font-size: 13px; color: var(--gray-600); margin-bottom: 8px; }
@@ -566,21 +486,21 @@ body {
   white-space: nowrap;
   z-index: 999;
 }
-.toast.show {
-  transform: translateX(-50%) translateY(0);
-  opacity: 1;
-}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
 /* ── Responsive ───────────────────────────────────── */
-@media (max-width: 600px) {
+@media (max-width: 700px) {
   .header-nav { display: none; }
-  .hamburger { display: flex; }
+  .hamburger  { display: flex; }
 
   .view-header { flex-direction: column; align-items: flex-start; }
   .date-nav { align-self: stretch; justify-content: space-between; }
   .current-date { min-width: 0; flex: 1; }
 
-  .terrains-grid { grid-template-columns: 1fr; }
+  .booking-row { grid-template-columns: 1fr; }
+  .brow-cell { border-right: none; border-bottom: 1px solid var(--gray-100); }
+  .brow-cell:last-child { border-bottom: none; }
+  .booking-header { display: none; }
 
   .input-row { flex-direction: column; }
   .input-row .btn { width: 100%; justify-content: center; }

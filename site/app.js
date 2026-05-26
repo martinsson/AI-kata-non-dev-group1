@@ -3,7 +3,7 @@
 
   const STORAGE_KEY = 'foot-geneve-v1';
   const MAX_TERRAINS = 10;
-  const DEFAULT_SLOTS = ['08:00','10:00','12:00','14:00','16:00','18:00','20:00'];
+  const DEFAULT_SLOTS = ['07:00','09:00','11:00','13:00','15:00','17:00'];
 
   const SEED_TERRAINS = [
     { id: 't1',  name: 'Bout-du-Monde — Synthétique 1',  lieu: 'Genève (Champel)',     surface: 'Synthétique',  slots: DEFAULT_SLOTS },
@@ -21,7 +21,6 @@
   /* ── State ─────────────────────────────────────── */
   let state = load();
   let currentDate = todayStr();
-  let selectedTerrainId = null;
   let pendingSlot = null;
   let editingTerrainId = null;
 
@@ -73,10 +72,6 @@
     );
   }
 
-  function freeSlotCount(terrain, dateStr) {
-    return terrain.slots.filter(s => !isPast(dateStr, s) && !isSlotTaken(terrain.id, dateStr, s)).length;
-  }
-
   /* ── Navigation ────────────────────────────────── */
   function showView(name) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -91,84 +86,58 @@
     document.getElementById('mobile-nav').classList.remove('open');
   }
 
-  /* ── Render terrain list (landing) ────────────── */
-  function renderTerrainList() {
+  /* ── Render booking table ──────────────────────── */
+  function renderBookingTable() {
     document.getElementById('current-date').textContent = formatDateFR(currentDate);
-    const list = document.getElementById('terrains-list');
-    list.innerHTML = '';
+    const table = document.getElementById('booking-table');
+    table.innerHTML = '';
+
+    // En-tête
+    const header = document.createElement('div');
+    header.className = 'booking-row booking-header';
+    header.innerHTML = `
+      <div class="brow-cell"><span class="brow-header-label">Terrain</span></div>
+      <div class="brow-cell"><span class="brow-header-label">Lieu</span></div>
+      <div class="brow-cell"><span class="brow-header-label">Surface</span></div>
+      <div class="brow-cell"><span class="brow-header-label">Créneaux disponibles</span></div>
+    `;
+    table.appendChild(header);
 
     state.terrains.forEach(terrain => {
-      const free = freeSlotCount(terrain, currentDate);
-      const surfaceBadgeClass = terrain.surface === 'Gazon naturel' ? 'badge-surface-gazon' : 'badge-surface-synth';
+      const row = document.createElement('div');
+      row.className = 'booking-row';
 
-      const card = document.createElement('div');
-      card.className = 'terrain-list-card';
-      card.innerHTML = `
-        <div class="terrain-list-info">
-          <div class="terrain-name">${esc(terrain.name)}</div>
-          <div class="terrain-meta">
-            <span class="badge badge-location"><i data-lucide="map-pin"></i>${esc(terrain.lieu)}</span>
-            <span class="badge ${surfaceBadgeClass}">${esc(terrain.surface)}</span>
-          </div>
+      const surfaceClass = terrain.surface === 'Gazon naturel' ? 'brow-surface-gazon' : 'brow-surface-synth';
+
+      const slotsHtml = terrain.slots.map(timeStr => {
+        const past  = isPast(currentDate, timeStr);
+        const taken = isSlotTaken(terrain.id, currentDate, timeStr);
+        const cls   = past ? 'slot-past' : taken ? 'slot-taken' : 'slot-free';
+        const label = `${timeStr}–${addTwoHours(timeStr)}`;
+        return `<span class="slot-chip ${cls}" data-tid="${terrain.id}" data-slot="${timeStr}">${label}</span>`;
+      }).join('');
+
+      row.innerHTML = `
+        <div class="brow-cell">
+          <div class="brow-name">${esc(terrain.name)}</div>
         </div>
-        <div class="terrain-list-avail ${free > 0 ? 'avail-yes' : 'avail-no'}">
-          ${free > 0 ? free + ' créneau' + (free > 1 ? 'x' : '') + ' libre' + (free > 1 ? 's' : '') : 'Complet'}
-        </div>
-        <div class="terrain-list-arrow"><i data-lucide="chevron-right"></i></div>
+        <div class="brow-cell brow-lieu">${esc(terrain.lieu)}</div>
+        <div class="brow-cell ${surfaceClass}">${esc(terrain.surface)}</div>
+        <div class="brow-cell brow-slots">${slotsHtml}</div>
       `;
 
-      card.addEventListener('click', () => openTerrainSlots(terrain.id));
-      list.appendChild(card);
+      // Clics sur créneaux libres
+      row.querySelectorAll('.slot-chip.slot-free').forEach(chip => {
+        chip.addEventListener('click', () => {
+          const tid  = chip.dataset.tid;
+          const slot = chip.dataset.slot;
+          const t    = state.terrains.find(x => x.id === tid);
+          openReserveModal(t, slot);
+        });
+      });
+
+      table.appendChild(row);
     });
-
-    lucide.createIcons();
-  }
-
-  /* ── Render slots view ─────────────────────────── */
-  function openTerrainSlots(terrainId) {
-    selectedTerrainId = terrainId;
-    renderSlotsView();
-    showView('slots');
-  }
-
-  function renderSlotsView() {
-    const terrain = state.terrains.find(t => t.id === selectedTerrainId);
-    if (!terrain) return;
-
-    document.getElementById('slots-current-date').textContent = formatDateFR(currentDate);
-
-    const surfaceBadgeClass = terrain.surface === 'Gazon naturel' ? 'badge-surface-gazon' : 'badge-surface-synth';
-    document.getElementById('terrain-detail-header').innerHTML = `
-      <div class="terrain-detail-name">${esc(terrain.name)}</div>
-      <div class="terrain-meta">
-        <span class="badge badge-location"><i data-lucide="map-pin"></i>${esc(terrain.lieu)}</span>
-        <span class="badge ${surfaceBadgeClass}">${esc(terrain.surface)}</span>
-      </div>
-    `;
-
-    const grid = document.getElementById('slots-grid');
-    grid.innerHTML = '';
-
-    terrain.slots.forEach(timeStr => {
-      const past  = isPast(currentDate, timeStr);
-      const taken = isSlotTaken(terrain.id, currentDate, timeStr);
-      const stateClass = past ? 'slot-past' : taken ? 'slot-taken' : 'slot-free';
-
-      const card = document.createElement('div');
-      card.className = 'slot-card ' + stateClass;
-      card.innerHTML = `
-        <div class="slot-time">${timeStr} – ${addTwoHours(timeStr)}</div>
-        <div class="slot-duration">2 heures</div>
-      `;
-
-      if (!past && !taken) {
-        card.addEventListener('click', () => openReserveModal(terrain, timeStr));
-      }
-
-      grid.appendChild(card);
-    });
-
-    lucide.createIcons();
   }
 
   /* ── Reserve modal ─────────────────────────────── */
@@ -177,7 +146,7 @@
     document.getElementById('slot-summary').innerHTML = `
       <strong>${esc(terrain.name)}</strong>
       ${formatDateFR(currentDate)}<br>
-      ${timeStr} – ${addTwoHours(timeStr)} (2 h)
+      ${timeStr} – ${addTwoHours(timeStr)} (2 h) &nbsp;·&nbsp; ${esc(terrain.lieu)} &nbsp;·&nbsp; ${esc(terrain.surface)}
     `;
     document.getElementById('field-name').value = '';
     document.getElementById('field-phone').value = '';
@@ -195,10 +164,10 @@
     const code = genCode();
     state.reservations.push({
       code,
-      terrainId: pendingSlot.terrain.id,
+      terrainId:   pendingSlot.terrain.id,
       terrainName: pendingSlot.terrain.name,
-      date: currentDate,
-      slot: pendingSlot.timeStr,
+      date:        currentDate,
+      slot:        pendingSlot.timeStr,
       name,
       phone: document.getElementById('field-phone').value.trim(),
       createdAt: new Date().toISOString(),
@@ -207,14 +176,13 @@
     hideModal('modal-reserve');
     document.getElementById('booking-code-display').textContent = code;
     showModal('modal-confirm');
-    renderSlotsView();
-    renderTerrainList();
+    renderBookingTable();
   }
 
   /* ── Lookup ────────────────────────────────────── */
   function lookupReservation() {
     const code = document.getElementById('lookup-code').value.trim().toUpperCase();
-    const res = state.reservations.find(r => r.code === code);
+    const res  = state.reservations.find(r => r.code === code);
     const container = document.getElementById('lookup-result');
 
     if (!res) {
@@ -246,7 +214,7 @@
         save();
         container.innerHTML = `<p style="color:var(--green);margin-top:8px;font-weight:600">Réservation annulée.</p>`;
         document.getElementById('lookup-code').value = '';
-        renderTerrainList();
+        renderBookingTable();
       });
     }
   }
@@ -295,9 +263,7 @@
     if (!confirm(`Supprimer « ${terrain.name} » ?`)) return;
     state.terrains = state.terrains.filter(t => t.id !== id);
     state.reservations = state.reservations.filter(r => r.terrainId !== id);
-    save();
-    renderAdmin();
-    renderTerrainList();
+    save(); renderAdmin(); renderBookingTable();
     showToast('Terrain supprimé.');
   }
 
@@ -307,15 +273,15 @@
     document.getElementById('terrain-modal-title').textContent = id ? 'Modifier le terrain' : 'Ajouter un terrain';
     if (id) {
       const t = state.terrains.find(x => x.id === id);
-      document.getElementById('t-name').value = t.name;
-      document.getElementById('t-lieu').value = t.lieu;
+      document.getElementById('t-name').value    = t.name;
+      document.getElementById('t-lieu').value    = t.lieu;
       document.getElementById('t-surface').value = t.surface;
-      document.getElementById('t-slots').value = t.slots.join('\n');
+      document.getElementById('t-slots').value   = t.slots.join('\n');
     } else {
-      document.getElementById('t-name').value = '';
-      document.getElementById('t-lieu').value = '';
+      document.getElementById('t-name').value    = '';
+      document.getElementById('t-lieu').value    = '';
       document.getElementById('t-surface').value = 'Synthétique';
-      document.getElementById('t-slots').value = DEFAULT_SLOTS.join('\n');
+      document.getElementById('t-slots').value   = DEFAULT_SLOTS.join('\n');
     }
     showModal('modal-terrain');
   }
@@ -334,17 +300,10 @@
       t.name = name; t.lieu = lieu; t.surface = surface;
       t.slots = rawSlots.length ? rawSlots : DEFAULT_SLOTS;
     } else {
-      if (state.terrains.length >= MAX_TERRAINS) {
-        showToast(`Limite de ${MAX_TERRAINS} terrains atteinte.`);
-        return;
-      }
+      if (state.terrains.length >= MAX_TERRAINS) { showToast(`Limite de ${MAX_TERRAINS} terrains atteinte.`); return; }
       state.terrains.push({ id: 't' + Date.now(), name, lieu, surface, slots: rawSlots.length ? rawSlots : DEFAULT_SLOTS });
     }
-
-    save();
-    hideModal('modal-terrain');
-    renderAdmin();
-    renderTerrainList();
+    save(); hideModal('modal-terrain'); renderAdmin(); renderBookingTable();
     showToast(editingTerrainId ? 'Terrain mis à jour.' : 'Terrain ajouté.');
   }
 
@@ -363,18 +322,17 @@
   /* ── Escape ────────────────────────────────────── */
   function esc(str) {
     return String(str)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+      .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   /* ── Init ──────────────────────────────────────── */
   function init() {
-    // Header nav
     document.querySelectorAll('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         showView(btn.dataset.view);
         if (btn.dataset.view === 'admin') renderAdmin();
-        if (btn.dataset.view === 'terrains') renderTerrainList();
+        if (btn.dataset.view === 'terrains') renderBookingTable();
       });
     });
 
@@ -382,62 +340,37 @@
       document.getElementById('mobile-nav').classList.toggle('open');
     });
 
-    // Date nav — terrain list
     document.getElementById('prev-day').addEventListener('click', () => {
-      currentDate = addDays(currentDate, -1);
-      renderTerrainList();
+      currentDate = addDays(currentDate, -1); renderBookingTable();
     });
     document.getElementById('next-day').addEventListener('click', () => {
-      currentDate = addDays(currentDate, 1);
-      renderTerrainList();
+      currentDate = addDays(currentDate, 1); renderBookingTable();
     });
 
-    // Date nav — slots view
-    document.getElementById('slots-prev-day').addEventListener('click', () => {
-      currentDate = addDays(currentDate, -1);
-      renderSlotsView();
-      document.getElementById('slots-current-date').textContent = formatDateFR(currentDate);
-    });
-    document.getElementById('slots-next-day').addEventListener('click', () => {
-      currentDate = addDays(currentDate, 1);
-      renderSlotsView();
-      document.getElementById('slots-current-date').textContent = formatDateFR(currentDate);
-    });
-
-    // Back button
-    document.getElementById('back-btn').addEventListener('click', () => {
-      renderTerrainList();
-      showView('terrains');
-    });
-
-    // Reserve modal
-    document.getElementById('modal-close').addEventListener('click', () => hideModal('modal-reserve'));
-    document.getElementById('modal-cancel-btn').addEventListener('click', () => hideModal('modal-reserve'));
+    document.getElementById('modal-close').addEventListener('click',       () => hideModal('modal-reserve'));
+    document.getElementById('modal-cancel-btn').addEventListener('click',  () => hideModal('modal-reserve'));
     document.getElementById('modal-confirm-btn').addEventListener('click', confirmReservation);
     document.getElementById('modal-reserve').addEventListener('click', e => {
       if (e.target === e.currentTarget) hideModal('modal-reserve');
     });
 
-    // Confirm modal
-    document.getElementById('confirm-close').addEventListener('click', () => hideModal('modal-confirm'));
+    document.getElementById('confirm-close').addEventListener('click',  () => hideModal('modal-confirm'));
     document.getElementById('confirm-ok-btn').addEventListener('click', () => hideModal('modal-confirm'));
 
-    // Lookup
     document.getElementById('lookup-btn').addEventListener('click', lookupReservation);
     document.getElementById('lookup-code').addEventListener('keydown', e => {
       if (e.key === 'Enter') lookupReservation();
     });
 
-    // Admin
-    document.getElementById('add-terrain-btn').addEventListener('click', () => openTerrainModal());
+    document.getElementById('add-terrain-btn').addEventListener('click',    () => openTerrainModal());
     document.getElementById('terrain-modal-close').addEventListener('click', () => hideModal('modal-terrain'));
-    document.getElementById('terrain-cancel-btn').addEventListener('click', () => hideModal('modal-terrain'));
-    document.getElementById('terrain-save-btn').addEventListener('click', saveTerrain);
+    document.getElementById('terrain-cancel-btn').addEventListener('click',  () => hideModal('modal-terrain'));
+    document.getElementById('terrain-save-btn').addEventListener('click',    saveTerrain);
     document.getElementById('modal-terrain').addEventListener('click', e => {
       if (e.target === e.currentTarget) hideModal('modal-terrain');
     });
 
-    renderTerrainList();
+    renderBookingTable();
     lucide.createIcons();
   }
 
