@@ -95,6 +95,25 @@ Un gestionnaire souhaite configurer les terrains disponibles et définir les pla
 - **SC-004**: 100 % des créneaux déjà réservés sont correctement signalés comme indisponibles
 - **SC-005**: L'application est utilisable sur mobile et desktop sans perte de fonctionnalité
 
+## Demo Data — Terrains genevois pré-chargés
+
+Au premier lancement, l'application propose les terrains suivants comme données d'exemple :
+
+| Nom | Lieu | Surface |
+|-----|------|---------|
+| Bout-du-Monde — Terrain synthétique 1 | Genève (Champel) | Synthétique |
+| Bout-du-Monde — Terrain synthétique 2 | Genève (Champel) | Synthétique |
+| Bout-du-Monde — Gazon A | Genève (Champel) | Gazon naturel |
+| Centre sportif de Vessy | Genève (Vessy) | Synthétique |
+| Centre sportif des Vernets | Genève (Plainpalais) | Synthétique |
+| Stade de la Fontenette | Carouge | Synthétique |
+| Stade de Lancy-Florimont | Petit-Lancy | Synthétique |
+| Stade des Arbères | Meyrin | Synthétique |
+| Centre des Evaux — Terrain compétition | Thônex | Gazon naturel |
+| Centre des Evaux — Terrain synthétique | Thônex | Synthétique |
+
+Ces données sont modifiables par le gestionnaire après le premier lancement.
+
 ## Assumptions
 
 - L'application est destinée à un seul équipement sportif (un club ou une association), pas à une place de marché multi-sites
