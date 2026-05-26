@@ -1,3 +1,162 @@
 <!doctype html>
-<title>Hello</title>
-<h1>Hello, world!</h1>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Terrains de foot — Genève</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://unpkg.com/lucide@0.468.0/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="brand">
+        <i data-lucide="circle-dot"></i>
+        <span>Foot Genève</span>
+      </div>
+      <nav class="header-nav">
+        <button class="nav-btn active" data-view="booking">Réserver</button>
+        <button class="nav-btn" data-view="my-reservation">Ma réservation</button>
+        <button class="nav-btn" data-view="admin">Gestion</button>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Menu">
+        <i data-lucide="menu"></i>
+      </button>
+    </div>
+    <div class="mobile-nav" id="mobile-nav">
+      <button class="nav-btn active" data-view="booking">Réserver</button>
+      <button class="nav-btn" data-view="my-reservation">Ma réservation</button>
+      <button class="nav-btn" data-view="admin">Gestion</button>
+    </div>
+  </header>
+
+  <main class="main">
+
+    <!-- ===== VUE : RÉSERVER ===== -->
+    <div id="view-booking" class="view active">
+      <div class="view-header">
+        <h1>Réserver un terrain</h1>
+        <div class="date-nav">
+          <button class="icon-btn" id="prev-day"><i data-lucide="chevron-left"></i></button>
+          <span class="current-date" id="current-date"></span>
+          <button class="icon-btn" id="next-day"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="terrains-grid" id="terrains-grid"></div>
+    </div>
+
+    <!-- ===== VUE : MA RÉSERVATION ===== -->
+    <div id="view-my-reservation" class="view">
+      <div class="view-header">
+        <h1>Ma réservation</h1>
+      </div>
+      <div class="card lookup-card">
+        <p class="lookup-hint">Entrez votre code de réservation pour consulter ou annuler.</p>
+        <div class="input-row">
+          <input type="text" id="lookup-code" placeholder="Ex. : GVA-4829" class="input" maxlength="10" />
+          <button class="btn btn-primary" id="lookup-btn">Rechercher</button>
+        </div>
+        <div id="lookup-result"></div>
+      </div>
+    </div>
+
+    <!-- ===== VUE : GESTION ===== -->
+    <div id="view-admin" class="view">
+      <div class="view-header">
+        <h1>Gestion des terrains</h1>
+        <button class="btn btn-primary" id="add-terrain-btn">
+          <i data-lucide="plus"></i> Ajouter un terrain
+        </button>
+      </div>
+      <div class="admin-list" id="admin-list"></div>
+      <p class="terrain-count" id="terrain-count"></p>
+    </div>
+
+  </main>
+
+  <!-- MODAL RÉSERVATION -->
+  <div class="modal-backdrop" id="modal-reserve" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="modal-title">Réserver</h2>
+        <button class="icon-btn" id="modal-close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="slot-summary" id="slot-summary"></div>
+        <label class="field">
+          <span>Nom <span class="required">*</span></span>
+          <input type="text" id="field-name" class="input" placeholder="Votre nom" />
+        </label>
+        <label class="field">
+          <span>Téléphone <span class="optional">(optionnel)</span></span>
+          <input type="tel" id="field-phone" class="input" placeholder="07x xxx xx xx" />
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="modal-cancel-btn">Annuler</button>
+        <button class="btn btn-primary" id="modal-confirm-btn">Confirmer la réservation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL CONFIRMATION CODE -->
+  <div class="modal-backdrop" id="modal-confirm" hidden>
+    <div class="modal modal-sm">
+      <div class="modal-header">
+        <h2>Réservation confirmée</h2>
+        <button class="icon-btn" id="confirm-close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body center">
+        <div class="success-icon"><i data-lucide="check-circle-2"></i></div>
+        <p class="confirm-label">Votre code de réservation</p>
+        <div class="booking-code" id="booking-code-display"></div>
+        <p class="confirm-hint">Conservez ce code pour retrouver ou annuler votre réservation.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary full" id="confirm-ok-btn">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL AJOUT/ÉDITION TERRAIN -->
+  <div class="modal-backdrop" id="modal-terrain" hidden>
+    <div class="modal">
+      <div class="modal-header">
+        <h2 id="terrain-modal-title">Ajouter un terrain</h2>
+        <button class="icon-btn" id="terrain-modal-close"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <label class="field">
+          <span>Nom <span class="required">*</span></span>
+          <input type="text" id="t-name" class="input" placeholder="Ex. : Bout-du-Monde — Synthétique 1" />
+        </label>
+        <label class="field">
+          <span>Lieu <span class="required">*</span></span>
+          <input type="text" id="t-lieu" class="input" placeholder="Ex. : Genève (Champel)" />
+        </label>
+        <label class="field">
+          <span>Type de surface</span>
+          <select id="t-surface" class="input">
+            <option value="Synthétique">Synthétique</option>
+            <option value="Gazon naturel">Gazon naturel</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Créneaux — heures de début (une par ligne)</span>
+          <textarea id="t-slots" class="input textarea" placeholder="08:00&#10;10:00&#10;12:00&#10;14:00&#10;16:00&#10;18:00&#10;20:00"></textarea>
+        </label>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" id="terrain-cancel-btn">Annuler</button>
+        <button class="btn btn-primary" id="terrain-save-btn">Enregistrer</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
