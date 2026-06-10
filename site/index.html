@@ -1,3 +1,700 @@
 <!doctype html>
-<title>Hello</title>
-<h1>Bonjour monde!</h1>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Punto Jungle 🐾</title>
+<style>
+  :root {
+    --leaf-dark: #143d1f;
+    --leaf: #1f6b34;
+    --leaf-light: #2e9d4c;
+    --sun: #f4d35e;
+    --bark: #4b3621;
+    --board-bg: rgba(8, 28, 14, 0.55);
+    --cell: rgba(255, 255, 255, 0.06);
+    --cell-valid: rgba(244, 211, 94, 0.18);
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    min-height: 100%;
+    font-family: "Trebuchet MS", "Segoe UI", system-ui, sans-serif;
+    color: #f3fff5;
+    background:
+      radial-gradient(1200px 600px at 20% -10%, #2e9d4c33, transparent),
+      radial-gradient(900px 500px at 100% 0%, #f4d35e22, transparent),
+      linear-gradient(160deg, #0c2c16, #08240f 55%, #06180b);
+    background-attachment: fixed;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 18px 14px 60px;
+    gap: 16px;
+  }
+
+  header.title {
+    text-align: center;
+    margin-top: 4px;
+  }
+  header.title h1 {
+    margin: 0;
+    font-size: clamp(28px, 6vw, 46px);
+    letter-spacing: 1px;
+    text-shadow: 0 2px 0 #06180b, 0 6px 18px #000a;
+  }
+  header.title .leafy { color: var(--leaf-light); }
+  header.title .sunny { color: var(--sun); }
+  header.title p {
+    margin: 6px 0 0;
+    opacity: 0.85;
+    font-size: 14px;
+  }
+
+  .panel {
+    width: min(720px, 100%);
+    background: var(--board-bg);
+    border: 1px solid #ffffff1a;
+    border-radius: 18px;
+    padding: 16px;
+    box-shadow: 0 18px 40px #0008, inset 0 1px 0 #ffffff14;
+    backdrop-filter: blur(3px);
+  }
+
+  /* ---- Setup ---- */
+  #setup h2 { margin: 0 0 12px; font-size: 20px; }
+  .players-count { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+  .pill {
+    flex: 1 1 0;
+    min-width: 64px;
+    padding: 12px;
+    text-align: center;
+    border-radius: 12px;
+    border: 1px solid #ffffff22;
+    background: var(--cell);
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: transform .08s ease, background .15s ease, border-color .15s;
+  }
+  .pill:hover { transform: translateY(-2px); }
+  .pill.selected {
+    background: linear-gradient(180deg, var(--leaf-light), var(--leaf));
+    border-color: var(--sun);
+    box-shadow: 0 6px 16px #0006;
+  }
+
+  .seat-preview { display: flex; flex-wrap: wrap; gap: 10px; margin: 4px 0 16px; }
+  .seat {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 999px;
+    background: #00000033; border: 1px solid #ffffff1f;
+    font-weight: 600;
+  }
+  .seat .dot { width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 0 0 2px #0006; }
+
+  .btn {
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    color: #08240f;
+    background: linear-gradient(180deg, var(--sun), #e6b93b);
+    padding: 13px 22px;
+    border-radius: 12px;
+    box-shadow: 0 8px 18px #0007;
+    transition: transform .08s ease, filter .15s;
+  }
+  .btn:hover { transform: translateY(-2px); filter: brightness(1.05); }
+  .btn.ghost {
+    color: #f3fff5;
+    background: #ffffff14;
+    border: 1px solid #ffffff2a;
+    box-shadow: none;
+    font-size: 14px;
+    padding: 10px 16px;
+  }
+
+  details.rules { margin-top: 14px; font-size: 14px; opacity: .92; }
+  details.rules summary { cursor: pointer; font-weight: 700; color: var(--sun); }
+  details.rules ul { margin: 8px 0 0; padding-left: 20px; line-height: 1.5; }
+
+  /* ---- Game ---- */
+  #game { display: none; flex-direction: column; align-items: center; gap: 16px; width: min(720px, 100%); }
+
+  .hud {
+    display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;
+    width: 100%;
+  }
+  .hud .seat { font-size: 14px; }
+  .hud .seat.active {
+    outline: 2px solid var(--sun);
+    box-shadow: 0 0 18px #f4d35e66;
+    background: #0000004d;
+  }
+  .hud .seat .count { opacity: .8; font-weight: 500; font-size: 12px; }
+
+  .turnbar {
+    display: flex; align-items: center; justify-content: center; gap: 16px;
+    flex-wrap: wrap; text-align: center;
+  }
+  .turnbar .msg { font-size: 16px; min-height: 22px; }
+  .turnbar .msg b { color: var(--sun); }
+
+  .current-card-wrap { display: flex; align-items: center; gap: 12px; }
+  .current-card-wrap .label { font-size: 13px; opacity: .8; }
+
+  .card {
+    position: relative;
+    width: var(--cs, 56px);
+    height: var(--cs, 56px);
+    border-radius: 12px;
+    display: grid;
+    place-items: center;
+    font-weight: 800;
+    user-select: none;
+    box-shadow: inset 0 2px 0 #ffffff40, inset 0 -4px 8px #0004, 0 4px 8px #0005;
+  }
+  .card .num {
+    font-size: calc(var(--cs, 56px) * 0.42);
+    line-height: 1;
+    text-shadow: 0 1px 2px #0007;
+    color: #fff;
+  }
+  .card .ico {
+    position: absolute;
+    bottom: 2px; right: 4px;
+    font-size: calc(var(--cs, 56px) * 0.30);
+    filter: drop-shadow(0 1px 1px #0008);
+  }
+  .card.big { --cs: 74px; }
+
+  #boardWrap {
+    width: 100%;
+    overflow: auto;
+    display: flex;
+    justify-content: center;
+    padding: 6px;
+  }
+  #board {
+    display: grid;
+    gap: 6px;
+    padding: 12px;
+    border-radius: 16px;
+    background:
+      repeating-linear-gradient(45deg, #ffffff08 0 12px, #ffffff03 12px 24px),
+      #00000040;
+    border: 1px solid #ffffff1a;
+  }
+  .cell {
+    width: var(--cs, 56px);
+    height: var(--cs, 56px);
+    border-radius: 12px;
+    background: var(--cell);
+    border: 1px dashed #ffffff14;
+    display: grid;
+    place-items: center;
+  }
+  .cell.empty { border-style: dashed; }
+  .cell.valid {
+    background: var(--cell-valid);
+    border: 2px solid var(--sun);
+    cursor: pointer;
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  .cell.valid:hover { background: #f4d35e33; }
+  .cell.cover { cursor: pointer; }
+  .cell.cover .card { outline: 2px solid var(--sun); outline-offset: 1px; }
+  @keyframes pulse { 0%,100%{ box-shadow: 0 0 0 0 #f4d35e00;} 50%{ box-shadow: 0 0 14px 1px #f4d35e55;} }
+  .card.placed-now { animation: pop .28s ease; }
+  @keyframes pop { 0%{ transform: scale(.4) rotate(-8deg); } 100%{ transform: scale(1) rotate(0);} }
+
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+
+  /* ---- Banner ---- */
+  #banner {
+    position: fixed; inset: 0;
+    display: none; place-items: center;
+    background: #04140999;
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    padding: 20px;
+  }
+  #banner .box {
+    background: linear-gradient(160deg, #1f6b34, #0c2c16);
+    border: 2px solid var(--sun);
+    border-radius: 20px;
+    padding: 28px 26px;
+    text-align: center;
+    max-width: 420px;
+    box-shadow: 0 20px 60px #000a;
+  }
+  #banner .box h2 { margin: 0 0 6px; font-size: 28px; }
+  #banner .box .who { font-size: 18px; margin-bottom: 16px; }
+  #banner .box .emoji { font-size: 54px; margin-bottom: 8px; }
+
+  footer { opacity: .6; font-size: 12px; text-align: center; }
+
+  @media (max-width: 480px) {
+    .card, .cell { --cs: 46px; }
+    .card.big { --cs: 60px; }
+  }
+</style>
+</head>
+<body>
+
+  <header class="title">
+    <h1>🌴 Punto <span class="leafy">Jun</span><span class="sunny">gle</span> 🐾</h1>
+    <p>Aligne 4 de tes animaux pour régner sur la canopée.</p>
+  </header>
+
+  <!-- ===================== SETUP ===================== -->
+  <section id="setup" class="panel">
+    <h2>🦜 Préparez la partie</h2>
+
+    <div style="font-size:14px; margin-bottom:8px; opacity:.85;">Nombre de joueurs</div>
+    <div class="players-count" id="countPicker">
+      <div class="pill" data-n="2">2</div>
+      <div class="pill selected" data-n="3">3</div>
+      <div class="pill" data-n="4">4</div>
+    </div>
+
+    <div class="seat-preview" id="seatPreview"></div>
+
+    <button class="btn" id="startBtn">Lancer la partie 🚀</button>
+
+    <details class="rules">
+      <summary>📜 Règles du jeu</summary>
+      <ul>
+        <li>Chaque joueur incarne un animal et possède 18 cartes (les chiffres 1 à 9, deux fois chacun).</li>
+        <li>À ton tour, tu joues la carte du dessus de ton paquet (tu ne choisis pas le chiffre&nbsp;!).</li>
+        <li>Pose-la sur une case <b>vide adjacente</b> à une carte déjà posée…</li>
+        <li>…ou <b>par-dessus</b> une carte (à toi ou non) de valeur <b>strictement inférieure</b>.</li>
+        <li>La zone de jeu ne dépasse jamais <b>6×6</b> cases.</li>
+        <li>🏆 Le premier à aligner <b>4 cartes de sa couleur</b> (ligne, colonne ou diagonale) gagne&nbsp;!</li>
+        <li>Si toutes les cartes sont jouées sans alignement, c'est un match nul.</li>
+      </ul>
+    </details>
+  </section>
+
+  <!-- ===================== GAME ===================== -->
+  <section id="game">
+    <div class="hud" id="hud"></div>
+
+    <div class="turnbar">
+      <div class="current-card-wrap">
+        <span class="label">À jouer :</span>
+        <div id="currentCard"></div>
+      </div>
+      <div class="msg" id="message"></div>
+    </div>
+
+    <div id="boardWrap"><div id="board"></div></div>
+
+    <div class="controls">
+      <button class="btn ghost" id="skipBtn" style="display:none;">Passer (aucun coup possible)</button>
+      <button class="btn ghost" id="restartBtn">↺ Nouvelle partie</button>
+    </div>
+  </section>
+
+  <!-- ===================== BANNER ===================== -->
+  <div id="banner">
+    <div class="box">
+      <div class="emoji" id="bannerEmoji">🏆</div>
+      <h2 id="bannerTitle">Victoire&nbsp;!</h2>
+      <div class="who" id="bannerWho"></div>
+      <button class="btn" id="bannerBtn">Rejouer</button>
+    </div>
+  </div>
+
+  <footer>Punto Jungle — fan-made • un kata maison 🌿</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  // ----- Jungle "colors" (animals) -----
+  const ANIMALS = [
+    { key: "tiger",  name: "Tigre",   icon: "🐯", color: "#e8821f", grad: "linear-gradient(180deg,#ffae4d,#d9690d)" },
+    { key: "parrot", name: "Perroquet", icon: "🦜", color: "#e23b3b", grad: "linear-gradient(180deg,#ff5d5d,#c41e1e)" },
+    { key: "snake",  name: "Serpent", icon: "🐍", color: "#2e9d4c", grad: "linear-gradient(180deg,#4fd277,#1f7a37)" },
+    { key: "toucan", name: "Toucan",  icon: "🐧", color: "#3a7bd5", grad: "linear-gradient(180deg,#5fa0ff,#235fb0)" },
+    // toucan uses a bird glyph fallback; replaced below
+  ];
+  ANIMALS[3].icon = "🦩"; // flamingo as the 4th jungle critter (blue-ish flamingo themed by color)
+  ANIMALS[3].name = "Flamant";
+
+  const SIZE_LIMIT = 6;     // max bounding box (6x6)
+  const GRID = 13;          // internal grid, first card at center
+  const CENTER = Math.floor(GRID / 2);
+
+  // ----- State -----
+  let state = null;
+
+  // ----- DOM -----
+  const $ = (id) => document.getElementById(id);
+  const setupEl = $("setup");
+  const gameEl = $("game");
+  const boardEl = $("board");
+  const hudEl = $("hud");
+  const msgEl = $("message");
+  const curCardEl = $("currentCard");
+  const seatPreviewEl = $("seatPreview");
+  const bannerEl = $("banner");
+
+  let playerCount = 3;
+
+  // ---------- Setup UI ----------
+  function renderSeatPreview() {
+    seatPreviewEl.innerHTML = "";
+    for (let i = 0; i < playerCount; i++) {
+      const a = ANIMALS[i];
+      const seat = document.createElement("div");
+      seat.className = "seat";
+      seat.innerHTML = `<span class="dot" style="background:${a.color}"></span>
+        <span>${a.icon} ${a.name}</span>`;
+      seatPreviewEl.appendChild(seat);
+    }
+  }
+
+  $("countPicker").addEventListener("click", (e) => {
+    const pill = e.target.closest(".pill");
+    if (!pill) return;
+    playerCount = parseInt(pill.dataset.n, 10);
+    document.querySelectorAll("#countPicker .pill").forEach(p => p.classList.remove("selected"));
+    pill.classList.add("selected");
+    renderSeatPreview();
+  });
+
+  $("startBtn").addEventListener("click", startGame);
+  $("restartBtn").addEventListener("click", backToSetup);
+  $("bannerBtn").addEventListener("click", () => { bannerEl.style.display = "none"; backToSetup(); });
+  $("skipBtn").addEventListener("click", skipTurn);
+
+  function backToSetup() {
+    bannerEl.style.display = "none";
+    gameEl.style.display = "none";
+    setupEl.style.display = "block";
+  }
+
+  // ---------- Game setup ----------
+  function shuffledDeck() {
+    const deck = [];
+    for (let n = 1; n <= 9; n++) { deck.push(n); deck.push(n); } // 1..9 twice = 18
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]];
+    }
+    return deck;
+  }
+
+  function startGame() {
+    const players = [];
+    for (let i = 0; i < playerCount; i++) {
+      players.push({
+        idx: i,
+        animal: ANIMALS[i],
+        deck: shuffledDeck(),
+      });
+    }
+    // grid[r][c] = { owner: playerIdx, value } | null  (top card only)
+    const grid = Array.from({ length: GRID }, () => Array(GRID).fill(null));
+
+    state = {
+      players,
+      grid,
+      current: 0,
+      placedCount: 0,
+      currentCard: null, // {owner,value}
+      finished: false,
+      lastPlaced: null,
+    };
+
+    setupEl.style.display = "none";
+    gameEl.style.display = "flex";
+
+    drawCardForCurrent();
+    render();
+  }
+
+  function activePlayer() { return state.players[state.current]; }
+
+  function drawCardForCurrent() {
+    const p = activePlayer();
+    if (p.deck.length === 0) { state.currentCard = null; return; }
+    state.currentCard = { owner: p.idx, value: p.deck[p.deck.length - 1] };
+  }
+
+  // ---------- Board geometry ----------
+  function occupiedCells() {
+    const cells = [];
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++)
+        if (state.grid[r][c]) cells.push([r, c]);
+    return cells;
+  }
+
+  function bounds() {
+    const occ = occupiedCells();
+    if (occ.length === 0) return null;
+    let minR = Infinity, maxR = -Infinity, minC = Infinity, maxC = -Infinity;
+    for (const [r, c] of occ) {
+      minR = Math.min(minR, r); maxR = Math.max(maxR, r);
+      minC = Math.min(minC, c); maxC = Math.max(maxC, c);
+    }
+    return { minR, maxR, minC, maxC };
+  }
+
+  function isAdjacentToOccupied(r, c) {
+    for (let dr = -1; dr <= 1; dr++)
+      for (let dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        const nr = r + dr, nc = c + dc;
+        if (nr < 0 || nc < 0 || nr >= GRID || nc >= GRID) continue;
+        if (state.grid[nr][nc]) return true;
+      }
+    return false;
+  }
+
+  // Would placing on empty cell (r,c) keep bounding box <= 6x6 ?
+  function withinSizeLimit(r, c) {
+    const b = bounds();
+    if (!b) return true; // first card
+    const minR = Math.min(b.minR, r), maxR = Math.max(b.maxR, r);
+    const minC = Math.min(b.minC, c), maxC = Math.max(b.maxC, c);
+    return (maxR - minR) < SIZE_LIMIT && (maxC - minC) < SIZE_LIMIT;
+  }
+
+  function isValidPlacement(r, c) {
+    if (!state.currentCard) return false;
+    const target = state.grid[r][c];
+    const b = bounds();
+    if (!b) {
+      // first card anywhere central
+      return r === CENTER && c === CENTER;
+    }
+    if (target) {
+      // cover only if strictly higher value
+      return state.currentCard.value > target.value;
+    }
+    // empty cell: must be adjacent AND keep size within limit
+    return isAdjacentToOccupied(r, c) && withinSizeLimit(r, c);
+  }
+
+  function hasAnyValidMove() {
+    // check covers + empties within current frame
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++)
+        if (isValidPlacement(r, c)) return true;
+    return false;
+  }
+
+  // ---------- Win detection ----------
+  function checkWin(owner) {
+    const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        const cell = state.grid[r][c];
+        if (!cell || cell.owner !== owner) continue;
+        for (const [dr, dc] of DIRS) {
+          const line = [[r, c]];
+          let nr = r + dr, nc = c + dc;
+          while (nr >= 0 && nc >= 0 && nr < GRID && nc < GRID &&
+                 state.grid[nr][nc] && state.grid[nr][nc].owner === owner) {
+            line.push([nr, nc]);
+            if (line.length >= 4) return line.slice(0, 4);
+            nr += dr; nc += dc;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  function anyDeckLeft() {
+    return state.players.some(p => p.deck.length > 0);
+  }
+
+  // ---------- Move handling ----------
+  function placeAt(r, c) {
+    if (state.finished || !isValidPlacement(r, c)) return;
+    const p = activePlayer();
+    const card = { owner: p.idx, value: state.currentCard.value };
+    state.grid[r][c] = card;
+    p.deck.pop();
+    state.placedCount++;
+    state.lastPlaced = [r, c];
+
+    const winLine = checkWin(p.idx);
+    if (winLine) {
+      state.finished = true;
+      render(winLine);
+      showBanner(p, false);
+      return;
+    }
+
+    if (!anyDeckLeft()) {
+      state.finished = true;
+      render();
+      showBanner(null, true);
+      return;
+    }
+
+    advanceTurn();
+    render();
+  }
+
+  function advanceTurn() {
+    // move to next player who still has cards
+    for (let i = 1; i <= state.players.length; i++) {
+      const idx = (state.current + i) % state.players.length;
+      if (state.players[idx].deck.length > 0) {
+        state.current = idx;
+        drawCardForCurrent();
+        return;
+      }
+    }
+    state.currentCard = null;
+  }
+
+  function skipTurn() {
+    if (state.finished) return;
+    advanceTurn();
+    render();
+  }
+
+  // ---------- Rendering ----------
+  function cardNode(card, extraClass = "") {
+    const a = ANIMALS[card.owner];
+    const el = document.createElement("div");
+    el.className = "card " + extraClass;
+    el.style.background = a.grad;
+    el.innerHTML = `<span class="num">${card.value}</span><span class="ico">${a.icon}</span>`;
+    return el;
+  }
+
+  function render(winLine = null) {
+    renderHUD();
+    renderCurrentCard();
+    renderBoard(winLine);
+    renderMessage();
+    renderSkip();
+  }
+
+  function renderHUD() {
+    hudEl.innerHTML = "";
+    state.players.forEach((p) => {
+      const a = p.animal;
+      const seat = document.createElement("div");
+      seat.className = "seat" + (p.idx === state.current && !state.finished ? " active" : "");
+      seat.innerHTML = `<span class="dot" style="background:${a.color}"></span>
+        <span>${a.icon} ${a.name}</span>
+        <span class="count">· ${p.deck.length} 🃏</span>`;
+      hudEl.appendChild(seat);
+    });
+  }
+
+  function renderCurrentCard() {
+    curCardEl.innerHTML = "";
+    if (state.currentCard) {
+      curCardEl.appendChild(cardNode(state.currentCard, "big"));
+    }
+  }
+
+  function renderBoard(winLine = null) {
+    const winSet = new Set((winLine || []).map(([r, c]) => r + "," + c));
+    const b = bounds();
+
+    // Determine the window to render.
+    let r0, r1, c0, c1;
+    if (!b) {
+      r0 = CENTER; r1 = CENTER; c0 = CENTER; c1 = CENTER;
+    } else {
+      r0 = b.minR - 1; r1 = b.maxR + 1;
+      c0 = b.minC - 1; c1 = b.maxC + 1;
+    }
+    r0 = Math.max(0, r0); c0 = Math.max(0, c0);
+    r1 = Math.min(GRID - 1, r1); c1 = Math.min(GRID - 1, c1);
+
+    const cols = c1 - c0 + 1;
+    boardEl.style.gridTemplateColumns = `repeat(${cols}, var(--cs, 56px))`;
+    boardEl.innerHTML = "";
+
+    for (let r = r0; r <= r1; r++) {
+      for (let c = c0; c <= c1; c++) {
+        const cellEl = document.createElement("div");
+        cellEl.className = "cell";
+        const card = state.grid[r][c];
+        const valid = !state.finished && isValidPlacement(r, c);
+
+        if (card) {
+          const isLast = state.lastPlaced && state.lastPlaced[0] === r && state.lastPlaced[1] === c;
+          const extra = (isLast ? "placed-now " : "") + (winSet.has(r + "," + c) ? "win" : "");
+          const cn = cardNode(card, extra.trim());
+          if (winSet.has(r + "," + c)) {
+            cn.style.outline = "3px solid #fff";
+            cn.style.outlineOffset = "2px";
+          }
+          cellEl.appendChild(cn);
+          if (valid) cellEl.classList.add("cover");
+        } else {
+          cellEl.classList.add("empty");
+        }
+
+        if (valid) {
+          cellEl.classList.add("valid");
+          cellEl.addEventListener("click", () => placeAt(r, c));
+        }
+        boardEl.appendChild(cellEl);
+      }
+    }
+  }
+
+  function renderMessage() {
+    if (state.finished) { msgEl.innerHTML = ""; return; }
+    const p = activePlayer();
+    const a = p.animal;
+    if (!state.currentCard) {
+      msgEl.innerHTML = `<b>${a.icon} ${a.name}</b> n'a plus de cartes.`;
+      return;
+    }
+    if (!hasAnyValidMove()) {
+      msgEl.innerHTML = `Au tour de <b>${a.icon} ${a.name}</b> — aucun coup possible, passe ton tour.`;
+    } else {
+      msgEl.innerHTML = `Au tour de <b>${a.icon} ${a.name}</b> — pose ta carte sur une case surlignée.`;
+    }
+  }
+
+  function renderSkip() {
+    const show = !state.finished && state.currentCard && !hasAnyValidMove();
+    $("skipBtn").style.display = show ? "inline-block" : "none";
+  }
+
+  function showBanner(player, draw) {
+    setTimeout(() => {
+      if (draw) {
+        $("bannerEmoji").textContent = "🤝";
+        $("bannerTitle").textContent = "Match nul !";
+        $("bannerWho").textContent = "Toutes les cartes sont jouées, la jungle reste partagée.";
+      } else {
+        const a = player.animal;
+        $("bannerEmoji").textContent = a.icon;
+        $("bannerTitle").textContent = "Victoire !";
+        $("bannerWho").innerHTML = `<b>${a.name}</b> aligne 4 cartes et règne sur la canopée ! 🌴`;
+      }
+      bannerEl.style.display = "grid";
+    }, 450);
+  }
+
+  // init
+  renderSeatPreview();
+})();
+</script>
+</body>
+</html>
