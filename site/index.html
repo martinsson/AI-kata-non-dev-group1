@@ -97,6 +97,21 @@
     font-weight: 600;
   }
   .seat .dot { width: 18px; height: 18px; border-radius: 50%; box-shadow: 0 0 0 2px #0006; }
+  .seat .name-input {
+    width: 120px;
+    max-width: 40vw;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 8px;
+    font: inherit;
+    font-weight: 600;
+    color: #08240f;
+    background: #f3fff5;
+    outline: 2px solid transparent;
+    transition: outline-color .15s;
+  }
+  .seat .name-input:focus { outline-color: var(--sun); }
+  .seat .name-input::placeholder { color: #08240f88; font-weight: 500; }
 
   .btn {
     display: inline-block;
@@ -357,6 +372,21 @@
 
   let playerCount = 2;
   let mode = "solo"; // "solo" | "multi"
+  const playerNames = []; // custom names typed in setup, keyed by seat index
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, ch => (
+      { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+    ));
+  }
+
+  // Name actually shown for a seat: custom name if typed, else a sensible default.
+  function seatName(i) {
+    const typed = (playerNames[i] || "").trim();
+    if (typed) return typed;
+    if (seatIsBot(i)) return ANIMALS[i].name;
+    return mode === "solo" ? "Toi" : ANIMALS[i].name;
+  }
 
   const BOT_DELAY = 700; // ms before a bot plays, so the move is readable
 
@@ -368,14 +398,27 @@
     for (let i = 0; i < playerCount; i++) {
       const a = ANIMALS[i];
       const bot = seatIsBot(i);
-      const label = bot ? `${a.icon} ${a.name} 🤖`
-                   : (mode === "solo" ? `${a.icon} Toi` : `${a.icon} ${a.name}`);
       const seat = document.createElement("div");
       seat.className = "seat";
-      seat.innerHTML = `<span class="dot" style="background:${a.color}"></span><span>${label}</span>`;
+      if (bot) {
+        seat.innerHTML = `<span class="dot" style="background:${a.color}"></span><span>${a.icon} ${a.name} 🤖</span>`;
+      } else {
+        const placeholder = mode === "solo" ? "Ton nom" : a.name;
+        const val = escapeHtml(playerNames[i] || "");
+        seat.innerHTML = `<span class="dot" style="background:${a.color}"></span>
+          <span>${a.icon}</span>
+          <input type="text" class="name-input" maxlength="14" data-seat="${i}"
+                 placeholder="${escapeHtml(placeholder)}" value="${val}" aria-label="Nom du joueur ${i + 1}" />`;
+      }
       seatPreviewEl.appendChild(seat);
     }
   }
+
+  seatPreviewEl.addEventListener("input", (e) => {
+    const input = e.target.closest(".name-input");
+    if (!input) return;
+    playerNames[parseInt(input.dataset.seat, 10)] = input.value;
+  });
 
   function updateCountLabel() {
     $("countLabel").textContent = mode === "solo"
@@ -432,6 +475,7 @@
         animal: ANIMALS[i],
         deck: shuffledDeck(),
         isBot: seatIsBot(i),
+        name: seatName(i),
       });
     }
     // grid[r][c] = { owner: playerIdx, value } | null  (top card only)
@@ -458,9 +502,9 @@
   function activePlayer() { return state.players[state.current]; }
 
   function playerLabel(p) {
-    if (p.isBot) return `${p.animal.icon} ${p.animal.name} 🤖`;
-    if (mode === "solo") return `${p.animal.icon} Toi`;
-    return `${p.animal.icon} ${p.animal.name}`;
+    const name = escapeHtml(p.name);
+    if (p.isBot) return `${p.animal.icon} ${name} 🤖`;
+    return `${p.animal.icon} ${name}`;
   }
 
   function drawCardForCurrent() {
@@ -851,10 +895,14 @@
         const a = player.animal;
         $("bannerEmoji").textContent = a.icon;
         const human = !player.isBot && mode === "solo";
+        // "Tu alignes" only when the solo human kept the default name; otherwise
+        // address the player by the name they entered.
+        const useSecondPerson = human && player.name === "Toi";
         $("bannerTitle").textContent = human ? "Bravo, victoire !"
                                      : (player.isBot ? "Le bot l'emporte…" : "Victoire !");
-        const who = player.isBot ? `${a.name} 🤖` : (human ? "Tu" : a.name);
-        const verb = human ? "alignes" : "aligne";
+        const who = useSecondPerson ? "Tu"
+                  : (player.isBot ? `${escapeHtml(player.name)} 🤖` : escapeHtml(player.name));
+        const verb = useSecondPerson ? "alignes" : "aligne";
         $("bannerWho").innerHTML = `<b>${who}</b> ${verb} 4 cartes et règne sur la canopée ! 🌴`;
       }
       bannerEl.style.display = "grid";
