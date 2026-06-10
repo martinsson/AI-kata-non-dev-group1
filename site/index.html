@@ -258,10 +258,16 @@
   <section id="setup" class="panel">
     <h2>🦜 Préparez la partie</h2>
 
-    <div style="font-size:14px; margin-bottom:8px; opacity:.85;">Nombre de joueurs</div>
+    <div style="font-size:14px; margin-bottom:8px; opacity:.85;">Mode de jeu</div>
+    <div class="players-count" id="modePicker">
+      <div class="pill selected" data-mode="solo">🤖 Solo (vs&nbsp;bot)</div>
+      <div class="pill" data-mode="multi">👥 Entre&nbsp;amis</div>
+    </div>
+
+    <div style="font-size:14px; margin:14px 0 8px; opacity:.85;" id="countLabel">Nombre de joueurs (toi + bots)</div>
     <div class="players-count" id="countPicker">
-      <div class="pill" data-n="2">2</div>
-      <div class="pill selected" data-n="3">3</div>
+      <div class="pill selected" data-n="2">2</div>
+      <div class="pill" data-n="3">3</div>
       <div class="pill" data-n="4">4</div>
     </div>
 
@@ -279,6 +285,7 @@
         <li>La zone de jeu ne dépasse jamais <b>6×6</b> cases.</li>
         <li>🏆 Le premier à aligner <b>4 cartes de sa couleur</b> (ligne, colonne ou diagonale) gagne&nbsp;!</li>
         <li>Si toutes les cartes sont jouées sans alignement, c'est un match nul.</li>
+        <li>🤖 En <b>mode solo</b>, joue contre un ou plusieurs bots qui cherchent à gagner et à bloquer tes alignements.</li>
       </ul>
     </details>
   </section>
@@ -348,20 +355,43 @@
   const seatPreviewEl = $("seatPreview");
   const bannerEl = $("banner");
 
-  let playerCount = 3;
+  let playerCount = 2;
+  let mode = "solo"; // "solo" | "multi"
+
+  const BOT_DELAY = 700; // ms before a bot plays, so the move is readable
 
   // ---------- Setup UI ----------
+  function seatIsBot(i) { return mode === "solo" && i > 0; }
+
   function renderSeatPreview() {
     seatPreviewEl.innerHTML = "";
     for (let i = 0; i < playerCount; i++) {
       const a = ANIMALS[i];
+      const bot = seatIsBot(i);
+      const label = bot ? `${a.icon} ${a.name} 🤖`
+                   : (mode === "solo" ? `${a.icon} Toi` : `${a.icon} ${a.name}`);
       const seat = document.createElement("div");
       seat.className = "seat";
-      seat.innerHTML = `<span class="dot" style="background:${a.color}"></span>
-        <span>${a.icon} ${a.name}</span>`;
+      seat.innerHTML = `<span class="dot" style="background:${a.color}"></span><span>${label}</span>`;
       seatPreviewEl.appendChild(seat);
     }
   }
+
+  function updateCountLabel() {
+    $("countLabel").textContent = mode === "solo"
+      ? "Nombre de joueurs (toi + bots)"
+      : "Nombre de joueurs";
+  }
+
+  $("modePicker").addEventListener("click", (e) => {
+    const pill = e.target.closest(".pill");
+    if (!pill) return;
+    mode = pill.dataset.mode;
+    document.querySelectorAll("#modePicker .pill").forEach(p => p.classList.remove("selected"));
+    pill.classList.add("selected");
+    updateCountLabel();
+    renderSeatPreview();
+  });
 
   $("countPicker").addEventListener("click", (e) => {
     const pill = e.target.closest(".pill");
@@ -401,6 +431,7 @@
         idx: i,
         animal: ANIMALS[i],
         deck: shuffledDeck(),
+        isBot: seatIsBot(i),
       });
     }
     // grid[r][c] = { owner: playerIdx, value } | null  (top card only)
@@ -421,9 +452,16 @@
 
     drawCardForCurrent();
     render();
+    maybeScheduleBot();
   }
 
   function activePlayer() { return state.players[state.current]; }
+
+  function playerLabel(p) {
+    if (p.isBot) return `${p.animal.icon} ${p.animal.name} 🤖`;
+    if (mode === "solo") return `${p.animal.icon} Toi`;
+    return `${p.animal.icon} ${p.animal.name}`;
+  }
 
   function drawCardForCurrent() {
     const p = activePlayer();
@@ -548,6 +586,7 @@
 
     advanceTurn();
     render();
+    maybeScheduleBot();
   }
 
   function advanceTurn() {
@@ -567,6 +606,126 @@
     if (state.finished) return;
     advanceTurn();
     render();
+    maybeScheduleBot();
+  }
+
+  // ---------- Bot (IA) ----------
+  // Count consecutive cells owned by `owner` stepping (dr,dc) from the cell
+  // just after (r,c). Does NOT count (r,c) itself.
+  function runLen(r, c, dr, dc, owner) {
+    let n = 0, nr = r + dr, nc = c + dc;
+    while (nr >= 0 && nc >= 0 && nr < GRID && nc < GRID &&
+           state.grid[nr][nc] && state.grid[nr][nc].owner === owner) {
+      n++; nr += dr; nc += dc;
+    }
+    return n;
+  }
+
+  // If `owner` placed a card on the (currently empty) cell (r,c),
+  // would that make 4+ in a row?
+  function completesFour(r, c, owner) {
+    const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+    for (const [dr, dc] of DIRS) {
+      const total = 1 + runLen(r, c, dr, dc, owner) + runLen(r, c, -dr, -dc, owner);
+      if (total >= 4) return true;
+    }
+    return false;
+  }
+
+  // Empty cells where some OTHER player could complete 4-in-a-row right now.
+  function computeThreatCells(me) {
+    const threats = new Set();
+    for (let r = 0; r < GRID; r++) {
+      for (let c = 0; c < GRID; c++) {
+        if (state.grid[r][c]) continue;
+        if (!isAdjacentToOccupied(r, c) || !withinSizeLimit(r, c)) continue;
+        for (const p of state.players) {
+          if (p.idx === me || p.deck.length === 0) continue;
+          if (completesFour(r, c, p.idx)) { threats.add(r + "," + c); break; }
+        }
+      }
+    }
+    return threats;
+  }
+
+  function runWeight(total) {
+    if (total >= 4) return 100000;
+    if (total === 3) return 45;
+    if (total === 2) return 9;
+    return 1;
+  }
+
+  // Score a candidate placement of the current card at (r,c) for player `me`.
+  function evaluateBotMove(r, c, me, val, threatCells) {
+    let score = 0;
+    const prev = state.grid[r][c];
+
+    // Blocking an opponent's imminent win on an empty cell is very valuable.
+    if (!prev && threatCells.has(r + "," + c)) score += 8000;
+
+    // Simulate placing our card.
+    state.grid[r][c] = { owner: me, value: val };
+
+    const DIRS = [[0,1],[1,0],[1,1],[1,-1]];
+    let bestRun = 1;
+    for (const [dr, dc] of DIRS) {
+      const total = 1 + runLen(r, c, dr, dc, me) + runLen(r, c, -dr, -dc, me);
+      bestRun = Math.max(bestRun, total);
+      score += runWeight(total);
+    }
+    if (bestRun >= 4) score += 100000; // winning move
+
+    state.grid[r][c] = prev;
+
+    // Covering an opponent card removes one of their pieces — mildly useful,
+    // more so when we spend a high card on a high opponent card.
+    if (prev && prev.owner !== me) score += 6 + prev.value * 0.5;
+
+    // Slight preference to stay central (keeps future options open).
+    const b = bounds();
+    if (b) {
+      const midR = (b.minR + b.maxR) / 2, midC = (b.minC + b.maxC) / 2;
+      score -= (Math.abs(r - midR) + Math.abs(c - midC)) * 0.15;
+    }
+    return score;
+  }
+
+  function botMove() {
+    if (!state || state.finished) return;
+    const me = state.current;
+    const p = state.players[me];
+    if (!p.isBot) return;
+
+    // Gather legal moves.
+    const moves = [];
+    for (let r = 0; r < GRID; r++)
+      for (let c = 0; c < GRID; c++)
+        if (isValidPlacement(r, c)) moves.push([r, c]);
+
+    if (!state.currentCard || moves.length === 0) {
+      advanceTurn();
+      render();
+      maybeScheduleBot();
+      return;
+    }
+
+    const val = state.currentCard.value;
+    const threatCells = computeThreatCells(me);
+
+    let best = moves[0], bestScore = -Infinity;
+    for (const [r, c] of moves) {
+      const s = evaluateBotMove(r, c, me, val, threatCells) + Math.random() * 0.5;
+      if (s > bestScore) { bestScore = s; best = [r, c]; }
+    }
+    placeAt(best[0], best[1]); // handles win/draw/advance + reschedules bots
+  }
+
+  function maybeScheduleBot() {
+    if (!state || state.finished) return;
+    if (activePlayer().isBot) {
+      render(); // refresh message ("le bot réfléchit…") and lock the board
+      setTimeout(botMove, BOT_DELAY);
+    }
   }
 
   // ---------- Rendering ----------
@@ -594,7 +753,7 @@
       const seat = document.createElement("div");
       seat.className = "seat" + (p.idx === state.current && !state.finished ? " active" : "");
       seat.innerHTML = `<span class="dot" style="background:${a.color}"></span>
-        <span>${a.icon} ${a.name}</span>
+        <span>${playerLabel(p)}</span>
         <span class="count">· ${p.deck.length} 🃏</span>`;
       hudEl.appendChild(seat);
     });
@@ -610,6 +769,7 @@
   function renderBoard(winLine = null) {
     const winSet = new Set((winLine || []).map(([r, c]) => r + "," + c));
     const b = bounds();
+    const locked = state.finished || activePlayer().isBot; // no human input on bot turns
 
     // Determine the window to render.
     let r0, r1, c0, c1;
@@ -631,7 +791,7 @@
         const cellEl = document.createElement("div");
         cellEl.className = "cell";
         const card = state.grid[r][c];
-        const valid = !state.finished && isValidPlacement(r, c);
+        const valid = !locked && isValidPlacement(r, c);
 
         if (card) {
           const isLast = state.lastPlaced && state.lastPlaced[0] === r && state.lastPlaced[1] === c;
@@ -659,20 +819,25 @@
   function renderMessage() {
     if (state.finished) { msgEl.innerHTML = ""; return; }
     const p = activePlayer();
-    const a = p.animal;
+    const label = playerLabel(p);
+    if (p.isBot) {
+      msgEl.innerHTML = `<b>${label}</b> réfléchit… 🌿`;
+      return;
+    }
     if (!state.currentCard) {
-      msgEl.innerHTML = `<b>${a.icon} ${a.name}</b> n'a plus de cartes.`;
+      msgEl.innerHTML = `<b>${label}</b> n'a plus de cartes.`;
       return;
     }
     if (!hasAnyValidMove()) {
-      msgEl.innerHTML = `Au tour de <b>${a.icon} ${a.name}</b> — aucun coup possible, passe ton tour.`;
+      msgEl.innerHTML = `Au tour de <b>${label}</b> — aucun coup possible, passe ton tour.`;
     } else {
-      msgEl.innerHTML = `Au tour de <b>${a.icon} ${a.name}</b> — pose ta carte sur une case surlignée.`;
+      msgEl.innerHTML = `Au tour de <b>${label}</b> — pose ta carte sur une case surlignée.`;
     }
   }
 
   function renderSkip() {
-    const show = !state.finished && state.currentCard && !hasAnyValidMove();
+    const p = state.finished ? null : activePlayer();
+    const show = p && !p.isBot && state.currentCard && !hasAnyValidMove();
     $("skipBtn").style.display = show ? "inline-block" : "none";
   }
 
@@ -685,14 +850,19 @@
       } else {
         const a = player.animal;
         $("bannerEmoji").textContent = a.icon;
-        $("bannerTitle").textContent = "Victoire !";
-        $("bannerWho").innerHTML = `<b>${a.name}</b> aligne 4 cartes et règne sur la canopée ! 🌴`;
+        const human = !player.isBot && mode === "solo";
+        $("bannerTitle").textContent = human ? "Bravo, victoire !"
+                                     : (player.isBot ? "Le bot l'emporte…" : "Victoire !");
+        const who = player.isBot ? `${a.name} 🤖` : (human ? "Tu" : a.name);
+        const verb = human ? "alignes" : "aligne";
+        $("bannerWho").innerHTML = `<b>${who}</b> ${verb} 4 cartes et règne sur la canopée ! 🌴`;
       }
       bannerEl.style.display = "grid";
     }, 450);
   }
 
   // init
+  updateCountLabel();
   renderSeatPreview();
 })();
 </script>
