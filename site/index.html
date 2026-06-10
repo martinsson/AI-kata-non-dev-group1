@@ -286,6 +286,14 @@
       <div class="pill" data-n="4">4</div>
     </div>
 
+    <div id="difficultyRow">
+      <div style="font-size:14px; margin:14px 0 8px; opacity:.85;">Difficulté du bot 🤖</div>
+      <div class="players-count" id="difficultyPicker">
+        <div class="pill" data-diff="facile">🌱 Facile</div>
+        <div class="pill selected" data-diff="difficile">🔥 Difficile</div>
+      </div>
+    </div>
+
     <div class="seat-preview" id="seatPreview"></div>
 
     <button class="btn" id="startBtn">Lancer la partie 🚀</button>
@@ -372,6 +380,7 @@
 
   let playerCount = 2;
   let mode = "solo"; // "solo" | "multi"
+  let difficulty = "difficile"; // "facile" | "difficile" — only affects bots (solo)
   const playerNames = []; // custom names typed in setup, keyed by seat index
 
   function escapeHtml(s) {
@@ -424,6 +433,8 @@
     $("countLabel").textContent = mode === "solo"
       ? "Nombre de joueurs (toi + bots)"
       : "Nombre de joueurs";
+    // The difficulty setting only matters when there are bots (solo mode).
+    $("difficultyRow").style.display = mode === "solo" ? "block" : "none";
   }
 
   $("modePicker").addEventListener("click", (e) => {
@@ -443,6 +454,14 @@
     document.querySelectorAll("#countPicker .pill").forEach(p => p.classList.remove("selected"));
     pill.classList.add("selected");
     renderSeatPreview();
+  });
+
+  $("difficultyPicker").addEventListener("click", (e) => {
+    const pill = e.target.closest(".pill");
+    if (!pill) return;
+    difficulty = pill.dataset.diff;
+    document.querySelectorAll("#difficultyPicker .pill").forEach(p => p.classList.remove("selected"));
+    pill.classList.add("selected");
   });
 
   $("startBtn").addEventListener("click", startGame);
@@ -489,6 +508,7 @@
       currentCard: null, // {owner,value}
       finished: false,
       lastPlaced: null,
+      difficulty, // "facile" | "difficile"
     };
 
     setupEl.style.display = "none";
@@ -750,6 +770,13 @@
       advanceTurn();
       render();
       maybeScheduleBot();
+      return;
+    }
+
+    // Easy bot: play a random legal move (no strategy, no blocking).
+    if (state.difficulty === "facile") {
+      const pick = moves[Math.floor(Math.random() * moves.length)];
+      placeAt(pick[0], pick[1]);
       return;
     }
 
