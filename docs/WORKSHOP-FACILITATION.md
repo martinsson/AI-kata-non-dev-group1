@@ -30,10 +30,14 @@ across the five group repositories. Not needed by participants.
 
 ## Tag conventions
 
-| Tag             | Lives on      | Means                                                              |
-| --------------- | ------------- | ----------------------------------------------------------------- |
-| `start/<date>`  | all repos     | The starting point. Reset always rewinds `main` to this commit.   |
-| `<session-tag>` | each group    | A snapshot of *that group's* `main` work, taken just before reset. |
+| Tag                 | Lives on   | Means                                                              |
+| ------------------- | ---------- | ----------------------------------------------------------------- |
+| `start/hello-world` | all repos  | The canonical starting point (`97fa88e`): bare `site/index.html` saying "Hello, world!" + the Pages deploy workflow. Reset rewinds `main` here. |
+| `<session-tag>`     | each group | A snapshot of *that group's* `main` work, taken just before reset. |
+
+> The starting point is the minimal "hello world" scaffold every group branches
+> from — **not** any one group's app. The reset script auto-detects the newest
+> `start/*` tag, so `start/hello-world` is used by default.
 
 Both are **immutable tags**, so a group's work is preserved and is never
 garbage-collected even after `main` is rewound. Tags are simpler and safer than
@@ -44,10 +48,11 @@ branches for this — they don't move and won't be touched on the next reset.
 Run from the repo root. The script preserves work, then rewinds each group's
 `main` to the starting point.
 
-### 1. (Only when the starting point changes) tag a new starting point
+### 1. (Only if the starting point changes) tag a new starting point
 
-The starting point only needs a new tag when *you* have changed the scaffold
-(new slides, new skeleton, etc.). Tag local `main` and push the tag everywhere:
+The canonical starting point is `start/hello-world` (`97fa88e`); local `main`
+points there too. You only need a new `start/*` tag if you deliberately change
+the scaffold groups begin from. Tag the new commit and push it everywhere:
 
 ```bash
 TAG=start/$(date +%F)
