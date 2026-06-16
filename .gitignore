@@ -14,6 +14,9 @@ node_modules/
 dist/
 build/
 
+# Cloudflare Wrangler cache
+.wrangler/
+
 # Local SQLite data
 data/
 *.db
