@@ -34,6 +34,47 @@ style: |
   }
   footer { color: #999; }
   ul { line-height: 1.7; }
+  section.procedure { padding: 22px 32px; }
+  section.procedure h1 { font-size: 1.15em; margin: 0 0 10px; }
+  .proc { display: flex; flex-direction: column; gap: 8px; }
+  .proc .steptext {
+    margin: 0;
+    font-size: 0.66em;
+    line-height: 1.3;
+  }
+  .proc code {
+    background: #eef3f8;
+    color: #0b6bcb;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.95em;
+  }
+  .proc .cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px 18px;
+  }
+  .proc .cards figure {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .proc .cards figcaption {
+    font-size: 0.62em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+    min-height: 2.4em;
+  }
+  .proc .cards img {
+    width: 100%;
+    height: 215px;
+    object-fit: contain;
+    object-position: center center;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #1a1a1a;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  }
 ---
 
 <!-- _class: lead -->
@@ -102,3 +143,22 @@ Pas grave — si le fonctionnel est prometteur, on refait le code proprement.
 <br>
 
 *L'IA génère, vous guidez.*
+
+---
+
+<!-- _class: procedure -->
+
+# The procedure — step by step
+
+<div class="proc">
+
+<p class="steptext"><b>1.</b> Go to <a href="https://www.changit.fr/AI-kata-non-dev-group1/"><strong>www.changit.fr/AI-kata-non-dev-group<u>N</u></strong></a> (<u>N</u> = your group number)</p>
+
+<div class="cards">
+<figure><figcaption><b>2.</b> Go to <strong>claude.ai/code</strong> and enter your email</figcaption><img src="images/step2-email.png" alt="Enter email"></figure>
+<figure><figcaption><b>3.</b> Get the <strong>verification code</strong> sent to your email</figcaption><img src="images/step3-code.png" alt="Verification code"></figure>
+<figure><figcaption><b>4.</b> Select the <strong>right project</strong> (your group)</figcaption><img src="images/step4-repo-zoom.png" alt="Select project"></figure>
+<figure><figcaption><b>5.</b> Ask for a change <strong>like this one</strong>:</figcaption><img src="images/step5-instructions.png" alt="Instruction in the chat"></figure>
+</div>
+
+</div>
