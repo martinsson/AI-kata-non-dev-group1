@@ -3,6 +3,11 @@
 Facilitator notes for running the "petite appli avec une IA, sans coder" kata
 across the five group repositories. Not needed by participants.
 
+> **This lives on the `facilitation` branch only**, in this central repo. It is
+> deliberately kept off `main` so the reset tooling never propagates to the
+> group repos (reset distributes the `start/*` tag, i.e. `main`, not this
+> branch). Run resets from here: `git switch facilitation`.
+
 ## Layout
 
 - **Local `main`** is the single source of truth — the *starting point* every
