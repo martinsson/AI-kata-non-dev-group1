@@ -162,6 +162,7 @@
       <div class="section-title" style="margin:0;"><span class="step">2</span> Your recipes</div>
       <span id="count" class="count"></span>
       <span class="spacer"></span>
+      <select id="level" class="clear" title="Filter by skill level"></select>
       <select id="cuisine" class="clear" title="Filter by cuisine"></select>
       <label class="toggle"><input type="checkbox" id="only-makeable" /> Only what I can make</label>
       <button class="clear" id="clear">Clear</button>
@@ -195,6 +196,26 @@ const CUISINE_EMOJI = {
   British: "🇬🇧", Korean: "🇰🇷", Spanish: "🇪🇸", Mediterranean: "🫒", Comfort: "🍲", Healthy: "🥗",
 };
 const cuisineTag = (c) => `${CUISINE_EMOJI[c] || "🍽️"} ${c}`;
+
+// Cook skill level per recipe (defaults to Intermediate if unlisted).
+const LEVEL = {
+  "Grilled Cheese": "Beginner", "Yogurt Bowl": "Beginner", "Banana Smoothie": "Beginner",
+  "Eggs on Toast": "Beginner", "Tamago Gohan": "Beginner", "Garlic Butter Rice": "Beginner",
+  "Green Salad": "Beginner", "Caprese Salad": "Beginner", "Guacamole": "Beginner",
+  "Pizza Toast": "Beginner", "Hummus": "Beginner", "Greek Salad": "Beginner", "BLT Sandwich": "Beginner",
+  "Classic Omelette": "Intermediate", "Tomato Pasta": "Intermediate", "Fried Rice": "Intermediate",
+  "Pancakes": "Intermediate", "Veggie Stir-Fry": "Intermediate", "Tomato & Egg": "Intermediate",
+  "Veggie Quesadilla": "Intermediate", "Spaghetti Aglio e Olio": "Intermediate", "Bean Tacos": "Intermediate",
+  "Garlic Soy Noodles": "Intermediate", "Shakshuka": "Intermediate", "Ratatouille": "Intermediate",
+  "Bibimbap Bowl": "Intermediate", "Gambas al Ajillo": "Intermediate", "Shrimp Fried Rice": "Intermediate",
+  "Garlic Butter Lobster": "Intermediate",
+  "Chicken Soup": "Advanced", "Chana Masala": "Advanced", "Thai Coconut Curry": "Advanced",
+  "Spanish Tortilla": "Advanced", "Lobster Pasta": "Advanced",
+};
+const LEVEL_EMOJI = { Beginner: "🟢", Intermediate: "🟡", Advanced: "🔴" };
+const LEVEL_ORDER = ["Beginner", "Intermediate", "Advanced"];
+const levelOf = (r) => LEVEL[r.name] || "Intermediate";
+const levelTag = (l) => `${LEVEL_EMOJI[l] || "⚪"} ${l}`;
 
 const RECIPES = [
   { name: "Classic Omelette", cuisine: "French", time: "10 min", serves: 1,
@@ -323,13 +344,19 @@ const recipesEl = document.getElementById("recipes");
 const countEl = document.getElementById("count");
 const onlyEl = document.getElementById("only-makeable");
 const cuisineEl = document.getElementById("cuisine");
+const levelEl = document.getElementById("level");
 
-// Populate the cuisine filter from the recipe list.
-(function buildCuisineFilter() {
+// Populate the cuisine and skill-level filters.
+(function buildFilters() {
   const cuisines = Array.from(new Set(RECIPES.map(r => r.cuisine))).sort();
   cuisineEl.innerHTML = '<option value="">🌍 All cuisines</option>' +
     cuisines.map(c => `<option value="${c}">${cuisineTag(c)}</option>`).join("");
   cuisineEl.addEventListener("change", render);
+
+  const levels = LEVEL_ORDER.filter(l => RECIPES.some(r => levelOf(r) === l));
+  levelEl.innerHTML = '<option value="">👩‍🍳 Any skill level</option>' +
+    levels.map(l => `<option value="${l}">${levelTag(l)}</option>`).join("");
+  levelEl.addEventListener("change", render);
 })();
 
 // Ingredients shown as tiles — starts with the recipe set, grows as users type custom ones.
@@ -411,6 +438,7 @@ function render() {
 
   let list = RECIPES.map(r => ({ r, s: score(r) })).filter(x => x.s.got.length > 0);
   if (cuisineEl.value) list = list.filter(x => x.r.cuisine === cuisineEl.value);
+  if (levelEl.value) list = list.filter(x => levelOf(x.r) === levelEl.value);
   if (onlyEl.checked) list = list.filter(x => x.s.coreMakeable);
   list.sort((a, b) => b.s.pct - a.s.pct || a.s.missing.length - b.s.missing.length);
 
@@ -420,8 +448,9 @@ function render() {
     RECIPES.forEach(r => r.ingredients.forEach(i => usedByAny.add(i)));
     const unknown = Array.from(have).filter(i => !usedByAny.has(i));
     let msg;
-    if (cuisineEl.value) {
-      msg = `No <b>${cuisineTag(cuisineEl.value)}</b> recipe matches your ingredients yet — try “🌍 All cuisines” or add more.`;
+    if (cuisineEl.value || levelEl.value) {
+      const f = [cuisineEl.value && cuisineTag(cuisineEl.value), levelEl.value && levelTag(levelEl.value)].filter(Boolean).join(" + ");
+      msg = `No <b>${f}</b> recipe matches your ingredients yet — try clearing the filters or adding more.`;
     } else if (unknown.length) {
       msg = `We don't have a recipe using <b>${unknown.map(i => `${emoji(i)} ${i}`).join(", ")}</b> yet. Try adding a few more common ingredients alongside it.`;
     } else {
@@ -441,7 +470,7 @@ function render() {
       ? `<span class="badge">${s.makeable ? "Ready to cook" : "Just need staples"}</span>` : "";
     card.innerHTML = `
       <h3>${r.name}${badge}</h3>
-      <div class="meta">${cuisineTag(r.cuisine)} · ⏱ ${r.time} · serves ${r.serves}</div>
+      <div class="meta">${cuisineTag(r.cuisine)} · ${levelTag(levelOf(r))} · ⏱ ${r.time} · serves ${r.serves}</div>
       <div class="progress"><span style="width:${s.pct}%"></span></div>
       <div class="match">You have <b>${s.got.length}/${r.ingredients.length}</b></div>
       <div class="ings">${pills}</div>
