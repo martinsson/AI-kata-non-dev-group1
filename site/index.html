@@ -120,6 +120,11 @@
     padding: 5px 12px; cursor: pointer; font-size: .82rem; color: var(--ink);
   }
   .reinvent:hover { border-color: var(--accent); color: var(--accent); }
+  .invent-head { display: flex; align-items: center; gap: 12px; margin: 4px 4px 10px; font-weight: 700; color: var(--accent); }
+  .invent-head span { flex: 1; }
+  .invent-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 620px) { .invent-grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .invent-grid .tagline { font-size: .72rem; }
 
   /* Photo scan */
   .scan {
@@ -472,151 +477,148 @@ const jl = (a) => a.length <= 1 ? (a[0] || "") : a.slice(0, -1).join(", ") + " a
 let inventActive = false;
 let inventSeed = 0;
 
-function invent(seed) {
+function buildCtx(seed) {
   const ings = Array.from(have);
   if (!ings.length) return null;
   const g = {};
   for (const k in CATS) g[k] = ings.filter(i => CATS[k].includes(i));
   const fat = g.fat[0] || "a splash of oil";
-  const adj = ADJ[seed % ADJ.length];
   const season = `Season to taste${g.spice.length ? " with " + jl(g.spice) : ""} (and a pinch of salt).`;
-  const finish = (g.herb.length || g.acid.length)
-    ? `Finish with ${jl([...g.acid, ...g.herb])}.` : null;
-
+  const finish = (g.herb.length || g.acid.length) ? `Finish with ${jl([...g.acid, ...g.herb])}.` : null;
+  const hotProtein = g.protein.filter(p => !["chickpeas", "beans"].includes(p));
+  const rawUnsafe = g.protein.filter(p => ["chicken", "beef", "shrimp", "lobster", "fish", "bacon"].includes(p));
   const mainList = g.protein.concat(g.base, g.veg).slice(0, 2);
   const nameMain = (mainList.length ? mainList : ings.slice(0, 2)).map(cap).join(" & ");
+  return { ings, g, fat, season, finish, hotProtein, rawUnsafe, nameMain, adj: ADJ[seed % ADJ.length] };
+}
 
-  const isPastaNoodle = g.base.some(b => b === "pasta" || b === "noodles");
-  const isRice = g.base.includes("rice");
-  const isWrap = g.base.includes("bread") || g.base.includes("tortilla");
-  const isPotato = g.base.includes("potato");
-  const hotProtein = g.protein.filter(p => !["chickpeas", "beans"].includes(p));
-  const isSmoothie = g.sweet.length && (ings.includes("milk") || ings.includes("yogurt"))
-    && !g.base.length && !g.veg.length && !hotProtein.length;
+// Each style is a totally different cooking APPROACH (bucket), so options feel dramatically distinct.
+const STYLES = [
+  { id: "stirfry", bucket: "sear", ok: c => c.g.veg.length || c.hotProtein.length || c.g.base.length,
+    make: c => { const b = c.g.base.find(x => ["rice", "noodles", "pasta"].includes(x));
+      return { name: `${c.adj} ${c.nameMain} Stir-Fry`, dish: "🔥 High-heat stir-fry", time: 18, steps: [
+        b ? `Cook the ${b} and set aside.` : null,
+        c.g.aromatic.length ? `Blast ${jl(c.g.aromatic)} in ${c.fat} over high heat.` : `Get ${c.fat} smoking hot in a wok.`,
+        c.hotProtein.length ? `Sear ${jl(c.hotProtein)} until just cooked.` : null,
+        c.g.veg.length ? `Throw in ${jl(c.g.veg)} and toss hard for 3–4 min.` : null,
+        c.g.liquid.length ? `Splash in ${jl(c.g.liquid)}.` : "Add a splash of water to steam briefly.",
+        b ? `Fold the ${b} back through.` : null, c.finish, c.season] }; } },
 
-  let name, dish, time, steps;
+  { id: "soup", bucket: "simmer", ok: c => c.g.veg.length || c.g.protein.length,
+    make: c => { const b = c.g.base.find(x => ["rice", "pasta", "noodles"].includes(x));
+      return { name: `${c.adj} ${c.nameMain} Soup`, dish: "🥣 Slow-simmered soup", time: 35, steps: [
+        c.g.aromatic.length ? `Soften ${jl(c.g.aromatic)} in ${c.fat}.` : `Warm ${c.fat} in a pot.`,
+        c.hotProtein.length ? `Add ${jl(c.hotProtein)} and brown lightly.` : null,
+        `Pour in ${c.g.liquid.includes("coconut milk") ? "the coconut milk plus water" : "water or stock"} to cover.`,
+        c.g.veg.length ? `Add ${jl(c.g.veg)} and simmer 20 min until tender.` : "Simmer gently for 15 min.",
+        b ? `Drop in the ${b} to cook in the broth.` : null, c.finish, c.season] }; } },
 
-  if (isSmoothie) {
-    name = `${adj} ${nameMain} Smoothie`;
-    dish = "Blended drink"; time = 5;
-    steps = [
-      `Add ${jl(ings)} to a blender.`,
-      "Blend until completely smooth, adding a splash of water if needed.",
-      "Taste, adjust sweetness, and serve chilled.",
-    ];
-  } else if (isPastaNoodle) {
-    const b = g.base.find(x => x === "pasta" || x === "noodles");
-    name = `${adj} ${nameMain} ${b === "noodles" ? "Noodles" : "Pasta"}`;
-    dish = "One-pan " + b; time = 20;
-    steps = [
-      `Boil the ${b} in salted water until just tender, then drain.`,
-      g.aromatic.length ? `Gently sizzle ${jl(g.aromatic)} in ${fat}.` : `Warm ${fat} in a large pan.`,
-      hotProtein.length ? `Add ${jl(hotProtein)} and cook through.` : null,
-      g.veg.length ? `Toss in ${jl(g.veg)} and sauté until softened.` : null,
-      `Fold the ${b} back in${g.liquid.length ? " with " + jl(g.liquid) : ""}.`,
-      g.dairy.length ? `Stir through ${jl(g.dairy)} until silky.` : null,
-      finish, season,
-    ];
-  } else if (isRice) {
-    name = `${adj} ${nameMain} Rice Bowl`;
-    dish = "Rice bowl"; time = 20;
-    steps = [
-      "Cook the rice (or use leftovers) and keep it warm.",
-      g.aromatic.length ? `Sizzle ${jl(g.aromatic)} in ${fat}.` : `Heat ${fat} in a wide pan.`,
-      hotProtein.length ? `Add ${jl(hotProtein)} and cook until done.` : null,
-      g.veg.length ? `Stir-fry ${jl(g.veg)} until just tender.` : null,
-      `Add the rice and toss over high heat${g.liquid.length ? " with " + jl(g.liquid) : ""}.`,
-      g.dairy.length ? `Top with ${jl(g.dairy)}.` : null,
-      finish, season,
-    ];
-  } else if (isWrap) {
-    const b = g.base.includes("tortilla") ? "tortilla" : "bread";
-    name = `${adj} ${nameMain} ${b === "tortilla" ? "Wrap" : "Toast"}`;
-    dish = b === "tortilla" ? "Loaded wrap" : "Stacked toast"; time = 12;
-    steps = [
-      (hotProtein.length || g.veg.length || g.aromatic.length)
-        ? `Sauté ${jl([...g.aromatic, ...hotProtein, ...g.veg])} in ${fat} until cooked.`
-        : `Lightly warm your fillings in ${fat}.`,
-      b === "bread" ? "Toast the bread." : "Warm the tortilla in a dry pan.",
-      `Pile on the fillings${g.dairy.length ? " with " + jl(g.dairy) : ""}.`,
-      finish, season,
-      b === "tortilla" ? "Roll up tightly, slice, and serve." : "Top, slice, and serve.",
-    ];
-  } else if (isPotato) {
-    name = `${adj} ${nameMain} Hash`;
-    dish = "Skillet hash"; time = 30;
-    steps = [
-      `Cube the potato and fry in ${fat} until golden and crisp.`,
-      g.aromatic.length ? `Add ${jl(g.aromatic)} and cook until fragrant.` : null,
-      hotProtein.length ? `Add ${jl(hotProtein)} and brown.` : null,
-      g.veg.length ? `Stir in ${jl(g.veg)} until tender.` : null,
-      g.dairy.length ? `Scatter ${jl(g.dairy)} on top.` : null,
-      finish, season,
-    ];
-  } else if (ings.includes("eggs")) {
-    name = `${adj} ${nameMain} Frittata`;
-    dish = "Egg skillet"; time = 15;
-    steps = [
-      "Beat the eggs in a bowl.",
-      (g.aromatic.length || g.veg.length) ? `Sauté ${jl([...g.aromatic, ...g.veg])} in ${fat}.` : `Heat ${fat} in an oven-safe pan.`,
-      hotProtein.filter(p => p !== "eggs").length ? `Add ${jl(hotProtein.filter(p => p !== "eggs"))} and cook.` : null,
-      `Pour in the eggs${g.dairy.length ? " and add " + jl(g.dairy) : ""}; cook gently until set.`,
-      finish, season,
-    ];
-  } else if (g.liquid.includes("coconut milk")) {
-    name = `${adj} ${nameMain} Curry`;
-    dish = "Simmered curry"; time = 30;
-    steps = [
-      g.aromatic.length ? `Fry ${jl(g.aromatic)} in ${fat}.` : `Warm ${fat} in a pot.`,
-      g.spice.length ? `Toast ${jl(g.spice)} for a minute.` : null,
-      hotProtein.length ? `Add ${jl(hotProtein)} and seal.` : null,
-      "Pour in the coconut milk and bring to a gentle simmer.",
-      g.veg.length ? `Add ${jl(g.veg)} and cook until tender.` : null,
-      finish, season,
-    ];
-  } else if (hotProtein.length === 0 && g.veg.length && (g.acid.length || g.fat.length)) {
-    name = `${adj} ${nameMain} Salad`;
-    dish = "Fresh salad"; time = 10;
-    steps = [
-      `Chop and combine ${jl(g.veg)} in a bowl.`,
-      (g.protein.length || g.dairy.length) ? `Add ${jl([...g.protein, ...g.dairy])}.` : null,
-      `Dress with ${jl([...(g.fat.length ? [g.fat[0]] : []), ...g.acid])}.`,
-      finish, season, "Toss and serve.",
-    ];
-  } else {
-    name = `${adj} ${nameMain} Skillet`;
-    dish = "Skillet medley"; time = 20;
-    steps = [
-      g.aromatic.length ? `Heat ${fat} and sizzle ${jl(g.aromatic)}.` : `Heat ${fat} in a large pan.`,
-      hotProtein.length ? `Add ${jl(hotProtein)} and cook through.` : null,
-      g.veg.length ? `Add ${jl(g.veg)} and sauté until tender.` : null,
-      g.liquid.length ? `Splash in ${jl(g.liquid)}.` : null,
-      g.dairy.length ? `Finish with ${jl(g.dairy)}.` : null,
-      finish, season,
-    ];
-  }
+  { id: "salad", bucket: "fresh", ok: c => (c.g.veg.length || c.g.sweet.length) && c.rawUnsafe.length === 0,
+    make: c => ({ name: `${c.adj} ${c.nameMain} Salad`, dish: "🥗 No-cook fresh salad", time: 10, steps: [
+      `Chop ${jl([...c.g.veg, ...c.g.sweet])} and pile into a bowl.`,
+      (c.g.protein.length || c.g.dairy.length) ? `Add ${jl([...c.g.protein, ...c.g.dairy])}.` : null,
+      `Dress with ${jl([...(c.g.fat.length ? [c.g.fat[0]] : ["a drizzle of oil"]), ...c.g.acid])}${c.g.acid.length ? "" : " (a splash of citrus or vinegar brightens it, if you have some)"}.`,
+      c.finish, c.season, "Toss just before serving."] }) },
 
-  return { name, dish, time, steps: steps.filter(Boolean), ingredients: ings };
+  { id: "roast", bucket: "bake", ok: c => c.g.veg.length || c.hotProtein.length || c.g.base.includes("potato"),
+    make: c => ({ name: `${c.adj} Roasted ${c.nameMain}`, dish: "🔆 Oven roast", time: 35, steps: [
+      "Heat the oven to 220°C / 425°F.",
+      `Toss ${jl([...c.hotProtein, ...c.g.veg, ...(c.g.base.includes("potato") ? ["potato"] : [])])} with ${c.fat}${c.g.spice.length ? " and " + jl(c.g.spice) : ""}.`,
+      "Spread on a tray in a single layer.",
+      "Roast 25–30 min, turning once, until caramelised at the edges.",
+      c.g.dairy.length ? `Scatter ${jl(c.g.dairy)} over for the last 5 min.` : null, c.finish, c.season] }) },
+
+  { id: "fritters", bucket: "sear", ok: c => c.g.veg.length && (c.ings.includes("eggs") || c.ings.includes("flour") || c.g.base.includes("potato") || c.g.protein.includes("chickpeas")),
+    make: c => ({ name: `${c.adj} ${c.nameMain} Fritters`, dish: "🥔 Pan-fried fritters", time: 22, steps: [
+      `Grate or finely chop ${jl(c.g.veg)}${c.g.base.includes("potato") ? " and the potato" : ""}.`,
+      `Mix with ${c.ings.includes("eggs") ? "beaten egg" : c.ings.includes("flour") ? "a little flour and water" : "mashed chickpeas"} to bind${c.g.spice.length ? ", plus " + jl(c.g.spice) : ""}.`,
+      "Shape into small patties.",
+      `Pan-fry in ${c.fat} until golden and crisp on both sides.`,
+      c.g.dairy.length ? `Serve with ${jl(c.g.dairy)}.` : null, c.finish] }) },
+
+  { id: "curry", bucket: "simmer", ok: c => (c.g.spice.length || c.g.liquid.includes("coconut milk")) && (c.g.protein.length || c.g.veg.length),
+    make: c => ({ name: `${c.adj} ${c.nameMain} Curry`, dish: "🍛 Spiced curry", time: 30, steps: [
+      c.g.aromatic.length ? `Fry ${jl(c.g.aromatic)} in ${c.fat}.` : `Warm ${c.fat} in a pan.`,
+      c.g.spice.length ? `Toast ${jl(c.g.spice)} for a minute.` : null,
+      c.hotProtein.length ? `Add ${jl(c.hotProtein)} and seal.` : null,
+      `Pour in ${c.g.liquid.includes("coconut milk") ? "the coconut milk" : "a splash of water"} and simmer.`,
+      c.g.veg.length ? `Add ${jl(c.g.veg)} and cook until tender.` : null,
+      c.g.base.includes("rice") ? "Serve over rice." : null, c.finish, c.season] }) },
+
+  { id: "pasta", bucket: "boil", ok: c => c.g.base.some(b => b === "pasta" || b === "noodles"),
+    make: c => { const b = c.g.base.find(x => x === "pasta" || x === "noodles");
+      return { name: `${c.adj} ${c.nameMain} ${b === "noodles" ? "Noodles" : "Pasta"}`, dish: "🍝 One-pan " + b, time: 20, steps: [
+        `Boil the ${b} until al dente, then drain.`,
+        c.g.aromatic.length ? `Sizzle ${jl(c.g.aromatic)} in ${c.fat}.` : `Warm ${c.fat}.`,
+        c.hotProtein.length ? `Add ${jl(c.hotProtein)} and cook.` : null,
+        c.g.veg.length ? `Add ${jl(c.g.veg)} and soften.` : null,
+        `Toss the ${b} through${c.g.liquid.length ? " with " + jl(c.g.liquid) : ""}.`,
+        c.g.dairy.length ? `Stir in ${jl(c.g.dairy)}.` : null, c.finish, c.season] }; } },
+
+  { id: "wrap", bucket: "assemble", ok: c => c.g.base.includes("bread") || c.g.base.includes("tortilla"),
+    make: c => { const b = c.g.base.includes("tortilla") ? "tortilla" : "bread";
+      return { name: `${c.adj} ${c.nameMain} ${b === "tortilla" ? "Wrap" : "Melt"}`, dish: b === "tortilla" ? "🌯 Rolled wrap" : "🥪 Toasted melt", time: 12, steps: [
+        (c.hotProtein.length || c.g.veg.length || c.g.aromatic.length) ? `Sauté ${jl([...c.g.aromatic, ...c.hotProtein, ...c.g.veg])} in ${c.fat}.` : `Warm your fillings in ${c.fat}.`,
+        b === "bread" ? "Toast the bread." : "Warm the tortilla in a dry pan.",
+        `Layer on the fillings${c.g.dairy.length ? " with " + jl(c.g.dairy) : ""}.`, c.finish,
+        b === "tortilla" ? "Roll up, toast seam-side down, and slice." : "Top with a second slice and griddle until golden."] }; } },
+
+  { id: "frittata", bucket: "bake", ok: c => c.ings.includes("eggs"),
+    make: c => ({ name: `${c.adj} ${c.nameMain} Frittata`, dish: "🍳 Baked egg skillet", time: 18, steps: [
+      "Beat the eggs.",
+      (c.g.aromatic.length || c.g.veg.length) ? `Soften ${jl([...c.g.aromatic, ...c.g.veg])} in ${c.fat}.` : `Heat ${c.fat} in an oven-safe pan.`,
+      c.hotProtein.filter(p => p !== "eggs").length ? `Add ${jl(c.hotProtein.filter(p => p !== "eggs"))}.` : null,
+      `Pour the eggs over${c.g.dairy.length ? " and dot with " + jl(c.g.dairy) : ""}; cook low until set, then finish under a grill.`,
+      c.finish, c.season] }) },
+
+  { id: "smoothie", bucket: "blend", ok: c => c.g.sweet.length && (c.ings.includes("milk") || c.ings.includes("yogurt")) && c.rawUnsafe.length === 0 && !c.g.aromatic.length,
+    make: c => ({ name: `${c.adj} ${c.nameMain} Smoothie`, dish: "🥤 Blended drink", time: 5, steps: [
+      `Add ${jl(c.ings)} to a blender.`,
+      "Blend until smooth, loosening with water if needed.",
+      "Taste, adjust, and serve chilled."] }) },
+];
+
+// Pick up to `n` options that are as different as possible (different buckets first).
+function inventMany(seed, n = 3) {
+  const base = buildCtx(seed);
+  if (!base) return [];
+  let pool = STYLES.filter(s => s.ok(base));
+  if (!pool.length) return [];
+  const off = seed % pool.length;
+  pool = pool.slice(off).concat(pool.slice(0, off));
+  const chosen = [], buckets = new Set();
+  for (const s of pool) { if (chosen.length >= n) break; if (!buckets.has(s.bucket)) { chosen.push(s); buckets.add(s.bucket); } }
+  for (const s of pool) { if (chosen.length >= n) break; if (!chosen.includes(s)) chosen.push(s); }
+  return chosen.map((s, i) => {
+    const c = buildCtx(seed + i * 4); // different adjective per option
+    const r = s.make(c);
+    return { ...r, steps: r.steps.filter(Boolean), ingredients: c.ings, style: s.id };
+  });
 }
 
 function renderInvented() {
   const box = document.getElementById("invented");
   if (!inventActive || have.size === 0) { box.innerHTML = ""; return; }
-  const r = invent(inventSeed);
-  if (!r) { box.innerHTML = ""; return; }
-  const pills = r.ingredients.map(i => `<span class="pill have" title="${i}">${emoji(i)}</span>`).join("");
+  const options = inventMany(inventSeed, 3);
+  if (!options.length) { box.innerHTML = ""; return; }
+  const card = (r) => {
+    const pills = r.ingredients.map(i => `<span class="pill have" title="${i}">${emoji(i)}</span>`).join("");
+    return `
+      <div class="recipe invented">
+        <div class="tagline">✨ Idea</div>
+        <h3>${r.name}</h3>
+        <div class="meta">${r.dish} · ⏱ ~${r.time} min · uses ${r.ingredients.length} ingredients</div>
+        <div class="ings">${pills}</div>
+        <ol class="steps">${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      </div>`;
+  };
   box.innerHTML = `
-    <div class="recipe invented">
-      <div class="tagline">✨ Invented just for you</div>
-      <h3>${r.name}</h3>
-      <div class="meta">${r.dish} · ⏱ ~${r.time} min · uses ${r.ingredients.length} of your ingredients</div>
-      <div class="ings">${pills}</div>
-      <ol class="steps">${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
-      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
-        <button class="reinvent">🎲 Reinvent</button>
-        <span class="disclaimer">Auto-generated idea — trust your taste and judgement.</span>
-      </div>
-    </div>`;
+    <div class="invent-head">
+      <span>✨ ${options.length} very different idea${options.length > 1 ? "s" : ""} from your ingredients</span>
+      <button class="reinvent">🎲 Reinvent</button>
+    </div>
+    <div class="invent-grid">${options.map(card).join("")}</div>
+    <div class="disclaimer">Auto-generated ideas — trust your taste and judgement.</div>`;
   box.querySelector(".reinvent").onclick = () => { inventSeed++; renderInvented(); };
 }
 
