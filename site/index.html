@@ -1,3 +1,287 @@
 <!doctype html>
-<title>Hello</title>
-<h1>Hello, world!</h1>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PantryChef — Recipes from what you have</title>
+<style>
+  :root {
+    --bg: #fff7f0;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #8a8a8a;
+    --accent: #ff7a45;
+    --good: #2bb673;
+    --line: #eee2d8;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  header { text-align: center; padding: 28px 16px 6px; }
+  header h1 { margin: 0; font-size: 1.9rem; }
+  header h1 .c { color: var(--accent); }
+  header p { margin: 6px 0 0; color: var(--muted); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 12px 16px 60px; }
+
+  .section-title { font-size: 1.05rem; margin: 22px 4px 10px; display: flex; align-items: center; gap: 8px; }
+  .section-title .step { background: var(--accent); color: #fff; border-radius: 50%; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; font-size: .85rem; }
+
+  /* Ingredient picker grid */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+    gap: 10px;
+  }
+  .tile {
+    background: var(--card);
+    border: 2px solid var(--line);
+    border-radius: var(--radius);
+    padding: 12px 6px 10px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .06s ease, border-color .15s ease, box-shadow .15s ease;
+    position: relative;
+  }
+  .tile:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.06); }
+  .tile .emoji { font-size: 2rem; line-height: 1; display: block; }
+  .tile .name { font-size: .8rem; margin-top: 6px; color: var(--ink); text-transform: capitalize; }
+  .tile.selected { border-color: var(--good); background: #f1fbf6; }
+  .tile.selected .check {
+    position: absolute; top: 6px; right: 6px;
+    background: var(--good); color: #fff; border-radius: 50%;
+    width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; font-size: .8rem;
+  }
+
+  .bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+    margin: 18px 4px 6px;
+  }
+  .bar .spacer { flex: 1; }
+  .count { color: var(--muted); font-size: .9rem; }
+  label.toggle { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: .9rem; cursor: pointer; }
+  button.clear {
+    background: none; border: 1px solid var(--line); color: var(--muted);
+    border-radius: 999px; padding: 7px 14px; cursor: pointer; font-size: .85rem;
+  }
+  button.clear:hover { color: var(--ink); border-color: var(--muted); }
+
+  /* Recipe cards */
+  .recipes { display: grid; grid-template-columns: 1fr; gap: 14px; }
+  @media (min-width: 620px) { .recipes { grid-template-columns: 1fr 1fr; } }
+  .recipe {
+    background: var(--card); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 16px;
+  }
+  .recipe.makeable { border-color: var(--good); box-shadow: 0 6px 18px rgba(43,182,115,.12); }
+  .recipe h3 { margin: 0 0 2px; font-size: 1.1rem; }
+  .recipe .meta { color: var(--muted); font-size: .82rem; margin-bottom: 10px; }
+  .badge { display:inline-block; font-size: .72rem; background: #eafaf2; color: var(--good); border: 1px solid #bfe9d4; border-radius: 999px; padding: 2px 8px; vertical-align: middle; margin-left: 6px; }
+  .progress { height: 7px; background: #f0e8e1; border-radius: 999px; overflow: hidden; margin: 6px 0; }
+  .progress > span { display:block; height:100%; background: linear-gradient(90deg, var(--accent), var(--good)); }
+  .ings { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+  .ings .pill {
+    font-size: 1.15rem; line-height: 1; padding: 5px; border-radius: 10px;
+    background: #faf5f1; filter: grayscale(1); opacity: .45;
+    position: relative; cursor: default;
+  }
+  .ings .pill.have { filter: none; opacity: 1; background: #eafaf2; }
+  .match { font-size: .82rem; color: var(--muted); }
+  .match b { color: var(--ink); }
+  details { margin-top: 6px; }
+  summary { cursor: pointer; color: var(--accent); font-size: .9rem; }
+  .steps { margin: 8px 0 0; padding-left: 18px; font-size: .9rem; line-height: 1.5; }
+  .empty { text-align: center; color: var(--muted); padding: 36px 10px; grid-column: 1 / -1; }
+  footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 16px; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>🍳 Pantry<span class="c">Chef</span></h1>
+    <p>Tap what you have at home — see what you can cook.</p>
+  </header>
+
+  <div class="wrap">
+    <div class="section-title"><span class="step">1</span> Pick your ingredients</div>
+    <div id="grid" class="grid"></div>
+
+    <div class="bar">
+      <div class="section-title" style="margin:0;"><span class="step">2</span> Your recipes</div>
+      <span id="count" class="count"></span>
+      <span class="spacer"></span>
+      <label class="toggle"><input type="checkbox" id="only-makeable" /> Only what I can make</label>
+      <button class="clear" id="clear">Clear</button>
+    </div>
+    <div id="recipes" class="recipes"></div>
+  </div>
+
+  <footer>Works fully offline · built-in recipe library</footer>
+
+<script>
+// Each ingredient has a picture (emoji) so the UI stays visual and simple.
+const ING = {
+  eggs: "🥚", butter: "🧈", salt: "🧂", pepper: "🌶️", cheese: "🧀",
+  pasta: "🍝", tomato: "🍅", garlic: "🧄", "olive oil": "🫒", oil: "🫗",
+  basil: "🌿", rice: "🍚", onion: "🧅", carrot: "🥕", "soy sauce": "🍶",
+  bread: "🍞", flour: "🌾", milk: "🥛", sugar: "🍬", broccoli: "🥦",
+  "bell pepper": "🫑", avocado: "🥑", lime: "🍋", cilantro: "🌿",
+  mozzarella: "🧀", chicken: "🍗", celery: "🥬", banana: "🍌", honey: "🍯",
+  yogurt: "🥣", chickpeas: "🫘", lemon: "🍋", tortilla: "🫓", lettuce: "🥬",
+};
+const emoji = (i) => ING[i] || "🥄";
+
+const RECIPES = [
+  { name: "Classic Omelette", time: "10 min", serves: 1,
+    ingredients: ["eggs", "butter", "salt", "pepper", "cheese"],
+    steps: ["Beat eggs with salt and pepper.", "Melt butter in a pan over medium heat.", "Pour in eggs, swirl, and let set.", "Add cheese, fold, and serve."] },
+  { name: "Tomato Pasta", time: "20 min", serves: 2,
+    ingredients: ["pasta", "tomato", "garlic", "olive oil", "salt", "basil"],
+    steps: ["Boil pasta in salted water until al dente.", "Sauté garlic in olive oil.", "Add chopped tomato and simmer 10 min.", "Toss with pasta and fresh basil."] },
+  { name: "Fried Rice", time: "15 min", serves: 2,
+    ingredients: ["rice", "eggs", "onion", "carrot", "soy sauce", "garlic", "oil"],
+    steps: ["Scramble eggs and set aside.", "Fry onion, carrot and garlic in oil.", "Add cooked rice and soy sauce.", "Stir in eggs and serve hot."] },
+  { name: "Grilled Cheese", time: "8 min", serves: 1,
+    ingredients: ["bread", "cheese", "butter"],
+    steps: ["Butter the outside of two bread slices.", "Place cheese between them.", "Grill in a pan until golden both sides."] },
+  { name: "Pancakes", time: "20 min", serves: 3,
+    ingredients: ["flour", "eggs", "milk", "sugar", "butter", "salt"],
+    steps: ["Whisk flour, sugar and salt.", "Add eggs and milk; mix to a batter.", "Cook ladles of batter in buttered pan.", "Flip when bubbles form."] },
+  { name: "Veggie Stir-Fry", time: "15 min", serves: 2,
+    ingredients: ["broccoli", "carrot", "bell pepper", "garlic", "soy sauce", "oil"],
+    steps: ["Heat oil in a wok.", "Add garlic, then the vegetables.", "Stir-fry on high heat 5–6 min.", "Splash soy sauce and serve."] },
+  { name: "Guacamole", time: "10 min", serves: 4,
+    ingredients: ["avocado", "lime", "onion", "tomato", "salt", "cilantro"],
+    steps: ["Mash avocado with salt and lime.", "Stir in diced onion and tomato.", "Fold in chopped cilantro."] },
+  { name: "Caprese Salad", time: "10 min", serves: 2,
+    ingredients: ["tomato", "mozzarella", "basil", "olive oil", "salt"],
+    steps: ["Slice tomato and mozzarella.", "Layer with basil leaves.", "Drizzle olive oil, season with salt."] },
+  { name: "Chicken Soup", time: "40 min", serves: 4,
+    ingredients: ["chicken", "carrot", "onion", "celery", "salt", "pepper", "garlic"],
+    steps: ["Simmer chicken with water, onion and garlic.", "Add chopped carrot and celery.", "Season and cook until tender."] },
+  { name: "Banana Smoothie", time: "5 min", serves: 1,
+    ingredients: ["banana", "milk", "honey", "yogurt"],
+    steps: ["Add banana, milk, yogurt and honey to a blender.", "Blend until smooth.", "Serve chilled."] },
+  { name: "Eggs on Toast", time: "10 min", serves: 1,
+    ingredients: ["eggs", "bread", "butter", "salt", "milk"],
+    steps: ["Whisk eggs with a splash of milk and salt.", "Cook gently in butter, stirring.", "Serve over toasted, buttered bread."] },
+  { name: "Garlic Butter Rice", time: "20 min", serves: 2,
+    ingredients: ["rice", "garlic", "butter", "salt"],
+    steps: ["Cook rice until fluffy.", "Sauté garlic in butter.", "Toss rice through garlic butter and salt."] },
+  { name: "Tomato & Egg", time: "12 min", serves: 2,
+    ingredients: ["eggs", "tomato", "salt", "sugar", "oil", "onion"],
+    steps: ["Scramble eggs lightly and set aside.", "Cook onion and tomato with a little sugar.", "Return eggs, season and combine."] },
+  { name: "Hummus", time: "10 min", serves: 4,
+    ingredients: ["chickpeas", "garlic", "lemon", "olive oil", "salt"],
+    steps: ["Blend chickpeas with garlic and lemon.", "Add olive oil until smooth.", "Season with salt to taste."] },
+  { name: "Pizza Toast", time: "12 min", serves: 2,
+    ingredients: ["bread", "tomato", "mozzarella", "basil", "olive oil"],
+    steps: ["Top bread with sliced tomato and mozzarella.", "Bake until cheese melts.", "Finish with basil and olive oil."] },
+  { name: "Veggie Quesadilla", time: "12 min", serves: 2,
+    ingredients: ["tortilla", "cheese", "bell pepper", "onion", "oil"],
+    steps: ["Sauté pepper and onion in oil.", "Fill tortilla with cheese and veggies.", "Toast in a dry pan until crisp; slice."] },
+  { name: "Yogurt Bowl", time: "5 min", serves: 1,
+    ingredients: ["yogurt", "honey", "banana"],
+    steps: ["Spoon yogurt into a bowl.", "Top with sliced banana.", "Drizzle with honey."] },
+  { name: "Green Salad", time: "8 min", serves: 2,
+    ingredients: ["lettuce", "tomato", "onion", "olive oil", "lemon", "salt"],
+    steps: ["Tear lettuce; add chopped tomato and onion.", "Whisk olive oil, lemon and salt.", "Toss together and serve."] },
+];
+
+// Pantry staples — if these are the only thing missing, the recipe still counts as makeable.
+const STAPLES = new Set(["salt", "pepper", "oil", "olive oil", "butter", "sugar"]);
+
+// All ingredients used, sorted with most-common first for a friendly picker order.
+const POPULAR = ["eggs", "tomato", "cheese", "rice", "pasta", "bread", "onion", "garlic", "milk", "chicken", "banana", "carrot"];
+const ALL = (() => {
+  const set = new Set();
+  RECIPES.forEach(r => r.ingredients.forEach(i => set.add(i)));
+  const rest = Array.from(set).filter(i => !POPULAR.includes(i)).sort();
+  return POPULAR.filter(p => set.has(p)).concat(rest);
+})();
+
+const have = new Set();
+const gridEl = document.getElementById("grid");
+const recipesEl = document.getElementById("recipes");
+const countEl = document.getElementById("count");
+const onlyEl = document.getElementById("only-makeable");
+
+function buildGrid() {
+  gridEl.innerHTML = "";
+  ALL.forEach(ing => {
+    const t = document.createElement("div");
+    t.className = "tile";
+    t.dataset.ing = ing;
+    t.innerHTML = `<span class="check">✓</span><span class="emoji">${emoji(ing)}</span><span class="name">${ing}</span>`;
+    t.onclick = () => {
+      if (have.has(ing)) have.delete(ing); else have.add(ing);
+      t.classList.toggle("selected", have.has(ing));
+      render();
+    };
+    gridEl.appendChild(t);
+  });
+}
+
+function score(r) {
+  const got = r.ingredients.filter(i => have.has(i));
+  const missing = r.ingredients.filter(i => !have.has(i));
+  const missingCore = missing.filter(i => !STAPLES.has(i));
+  const pct = Math.round((got.length / r.ingredients.length) * 100);
+  return { got, missing, missingCore, pct, makeable: missing.length === 0, coreMakeable: missingCore.length === 0 };
+}
+
+function render() {
+  recipesEl.innerHTML = "";
+  if (have.size === 0) {
+    recipesEl.innerHTML = '<div class="empty">Tap a few ingredients above to see what you can cook. ✨</div>';
+    countEl.textContent = "";
+    return;
+  }
+
+  let list = RECIPES.map(r => ({ r, s: score(r) })).filter(x => x.s.got.length > 0);
+  if (onlyEl.checked) list = list.filter(x => x.s.coreMakeable);
+  list.sort((a, b) => b.s.pct - a.s.pct || a.s.missing.length - b.s.missing.length);
+
+  countEl.textContent = list.length ? `${list.length} found` : "";
+  if (list.length === 0) {
+    recipesEl.innerHTML = '<div class="empty">Nothing matches yet — add more ingredients or untick the filter.</div>';
+    return;
+  }
+
+  list.forEach(({ r, s }) => {
+    const card = document.createElement("div");
+    card.className = "recipe" + (s.coreMakeable ? " makeable" : "");
+    const pills = r.ingredients.map(i =>
+      `<span class="pill ${have.has(i) ? "have" : ""}" title="${i}${have.has(i) ? "" : " (missing)"}">${emoji(i)}</span>`
+    ).join("");
+    const badge = s.coreMakeable
+      ? `<span class="badge">${s.makeable ? "Ready to cook" : "Just need staples"}</span>` : "";
+    card.innerHTML = `
+      <h3>${r.name}${badge}</h3>
+      <div class="meta">⏱ ${r.time} · serves ${r.serves}</div>
+      <div class="progress"><span style="width:${s.pct}%"></span></div>
+      <div class="match">You have <b>${s.got.length}/${r.ingredients.length}</b></div>
+      <div class="ings">${pills}</div>
+      <details><summary>Show recipe</summary><ol class="steps">${r.steps.map(st => `<li>${st}</li>`).join("")}</ol></details>
+    `;
+    recipesEl.appendChild(card);
+  });
+}
+
+document.getElementById("clear").onclick = () => {
+  have.clear();
+  document.querySelectorAll(".tile.selected").forEach(t => t.classList.remove("selected"));
+  render();
+};
+onlyEl.addEventListener("change", render);
+
+buildGrid();
+render();
+</script>
+</body>
+</html>
