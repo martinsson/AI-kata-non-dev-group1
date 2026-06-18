@@ -115,4 +115,4 @@ for remote in $REMOTES; do
 done
 
 echo "Done."
-[[ $DRY_RUN -eq 1 ]] && echo "(dry run — nothing was changed)"
+if [[ $DRY_RUN -eq 1 ]]; then echo "(dry run — nothing was changed)"; fi

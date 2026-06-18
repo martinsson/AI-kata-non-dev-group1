@@ -8,6 +8,26 @@ across the five group repositories. Not needed by participants.
 > group repos (reset distributes the `start/*` tag, i.e. `main`, not this
 > branch). Run resets from here: `git switch facilitation`.
 
+## At a glance — the two entry points
+
+The code is the documentation; here is just where to start.
+
+| Script | What it does |
+| ------ | ------------ |
+| **`scripts/publish-session.sh [date]`** | **Close a session.** Snapshots each group's app into the portfolio repo, screenshots it, adds cards, pushes the portfolio — then chains into the reset. This is the one command you usually run. |
+| `scripts/reset-workshop.sh <tag>` | Preserve each group's `main` behind a tag, then rewind `main` to the start point. Called by publish; also runnable standalone. |
+| `scripts/screenshot-portfolio.sh <dir> [entry…]` | Capture `preview.png` for portfolio apps (used by publish; standalone for backfilling old sessions). |
+
+```bash
+# End-to-end: publish today's session and reset the group repos
+./scripts/publish-session.sh --dry-run      # preview everything first
+./scripts/publish-session.sh                # publish → push portfolio → reset
+```
+
+The portfolio is the repo `martinsson/business-people-coding`, live at
+<https://www.changit.fr/business-people-coding/>. Giving participants an easy way
+to call a real LLM from their static app: see [LLM-FOR-APPS.md](LLM-FOR-APPS.md).
+
 ## Layout
 
 - **Local `main`** is the single source of truth — the *starting point* every
@@ -43,10 +63,29 @@ Both are **immutable tags**, so a group's work is preserved and is never
 garbage-collected even after `main` is rewound. Tags are simpler and safer than
 branches for this — they don't move and won't be touched on the next reset.
 
+# Publishing a session
+
+`scripts/publish-session.sh [<date>]` closes out a session end to end. For each
+group remote it snapshots `site/` from their `main` into the portfolio repo under
+`<date>/<group>/`, captures a `preview.png`, and (if no section for that date
+exists yet) adds bilingual cards to the portfolio's `index.html`; it commits and
+pushes the portfolio, then **chains into the reset** below.
+
+```bash
+./scripts/publish-session.sh --dry-run        # preview (default date = today)
+./scripts/publish-session.sh 2026-06-18        # publish that session, then reset
+```
+
+Useful flags: `--no-reset` (publish only), `--no-shots` (skip screenshots),
+`--no-push`, `--portfolio <dir>` (default `../business-people-coding`), `-y`.
+If you hand-curate the cards for a date, re-running is safe: the script detects an
+existing section and leaves your cards untouched.
+
 # Reset workflow (between sessions)
 
-Run from the repo root. The script preserves work, then rewinds each group's
-`main` to the starting point.
+`publish-session.sh` runs this for you at the end; run it standalone only to reset
+without publishing. The script preserves work, then rewinds each group's `main`
+to the starting point.
 
 ### 1. (Only if the starting point changes) tag a new starting point
 
