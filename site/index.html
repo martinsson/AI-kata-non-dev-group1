@@ -99,6 +99,23 @@
   .steps { margin: 8px 0 0; padding-left: 18px; font-size: .9rem; line-height: 1.5; }
   .empty { text-align: center; color: var(--muted); padding: 36px 10px; grid-column: 1 / -1; }
   footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 16px; }
+
+  /* Photo scan */
+  .scan {
+    background: var(--card); border: 2px dashed var(--line); border-radius: var(--radius);
+    padding: 14px; margin-bottom: 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+  }
+  .scan .upload {
+    display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+    background: var(--accent); color: #fff; font-weight: 600;
+    border-radius: 999px; padding: 10px 16px; font-size: .92rem;
+  }
+  .scan .upload:hover { filter: brightness(1.05); }
+  .scan .info { color: var(--muted); font-size: .82rem; flex: 1; min-width: 160px; }
+  #preview { display: none; width: 64px; height: 64px; object-fit: cover; border-radius: 10px; border: 1px solid var(--line); }
+  #scan-status { font-size: .85rem; color: var(--ink); margin: 0 4px 6px; min-height: 1.1em; }
+  #scan-status .ok { color: var(--good); }
+  #scan-status .warn { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -109,6 +126,17 @@
 
   <div class="wrap">
     <div class="section-title"><span class="step">1</span> Pick your ingredients</div>
+
+    <div class="scan">
+      <label class="upload">
+        📷 Scan a photo
+        <input type="file" id="photo" accept="image/*" capture="environment" hidden />
+      </label>
+      <img id="preview" alt="your photo" />
+      <span class="info">Upload or snap a photo of your ingredients — we'll auto-select what we recognize. Then tap to confirm or correct.</span>
+    </div>
+    <div id="scan-status"></div>
+
     <div id="grid" class="grid"></div>
 
     <div class="bar">
@@ -279,6 +307,94 @@ document.getElementById("clear").onclick = () => {
   render();
 };
 onlyEl.addEventListener("change", render);
+
+// ---- Photo scanning (in-browser, no backend) ----
+// Maps labels from a general image model to ingredients in our list.
+const RECOGNIZE = [
+  { k: ["banana"], ing: "banana" },
+  { k: ["lemon"], ing: "lemon" },
+  { k: ["lime"], ing: "lime" },
+  { k: ["bell pepper", "capsicum"], ing: "bell pepper" },
+  { k: ["broccoli"], ing: "broccoli" },
+  { k: ["cauliflower"], ing: "broccoli" },
+  { k: ["cabbage", "lettuce"], ing: "lettuce" },
+  { k: ["cucumber", "zucchini"], ing: "celery" },
+  { k: ["carbonara", "spaghetti", "noodle"], ing: "pasta" },
+  { k: ["loaf", "bagel", "pretzel", "baguette", "bun"], ing: "bread" },
+  { k: ["mushroom"], ing: "onion" },
+  { k: ["orange", "mandarin"], ing: "lemon" },
+  { k: ["egg", "omelet"], ing: "eggs" },
+  { k: ["mashed potato", "potato"], ing: "rice" },
+  { k: ["cheeseburger", "cheese"], ing: "cheese" },
+];
+
+const photoEl = document.getElementById("photo");
+const previewEl = document.getElementById("preview");
+const statusEl = document.getElementById("scan-status");
+const setStatus = (html) => { statusEl.innerHTML = html; };
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.onload = resolve;
+    s.onerror = () => reject(new Error("Could not load " + src));
+    document.head.appendChild(s);
+  });
+}
+
+let modelPromise = null;
+async function getModel() {
+  if (!modelPromise) {
+    setStatus("⏳ Loading the recognizer (first time only)…");
+    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js");
+    await loadScript("https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js");
+    modelPromise = mobilenet.load();
+  }
+  return modelPromise;
+}
+
+function selectTile(ing) {
+  have.add(ing);
+  const tile = gridEl.querySelector(`.tile[data-ing="${CSS.escape(ing)}"]`);
+  if (tile) tile.classList.add("selected");
+}
+
+function handlePredictions(preds) {
+  const matched = new Set();
+  const seenLabels = [];
+  preds.forEach(p => {
+    const label = p.className.toLowerCase();
+    seenLabels.push(p.className.split(",")[0]);
+    if (p.probability < 0.08) return;
+    for (const rule of RECOGNIZE) {
+      if (rule.k.some(k => label.includes(k))) { matched.add(rule.ing); break; }
+    }
+  });
+  if (matched.size > 0) {
+    matched.forEach(selectTile);
+    render();
+    const list = Array.from(matched).map(i => `${emoji(i)} ${i}`).join(", ");
+    setStatus(`<span class="ok">✓ Added: ${list}.</span> Tap any tile to confirm or correct.`);
+  } else {
+    setStatus(`<span class="warn">Couldn't confidently match an ingredient</span> (I saw: ${seenLabels.slice(0,3).join(", ")}). Tap the tiles below instead.`);
+  }
+}
+
+photoEl.addEventListener("change", async (e) => {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  previewEl.src = URL.createObjectURL(file);
+  previewEl.style.display = "block";
+  try {
+    const model = await getModel();
+    setStatus("🔍 Scanning your photo…");
+    if (previewEl.decode) { try { await previewEl.decode(); } catch (_) {} }
+    const preds = await model.classify(previewEl, 5);
+    handlePredictions(preds);
+  } catch (err) {
+    setStatus(`<span class="warn">Couldn't run the scanner</span> (${err.message}). You can still tap ingredients below.`);
+  }
+});
 
 buildGrid();
 render();
