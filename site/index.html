@@ -100,6 +100,27 @@
   .empty { text-align: center; color: var(--muted); padding: 36px 10px; grid-column: 1 / -1; }
   footer { text-align: center; color: var(--muted); font-size: .78rem; padding: 16px; }
 
+  /* Invent button + generated card */
+  button.invent {
+    background: linear-gradient(90deg, var(--accent), #ff5db1); color: #fff; font-weight: 700;
+    border: none; border-radius: 999px; padding: 8px 16px; cursor: pointer; font-size: .9rem;
+  }
+  button.invent:hover { filter: brightness(1.05); }
+  .invented {
+    border: 2px solid transparent !important;
+    background:
+      linear-gradient(var(--card), var(--card)) padding-box,
+      linear-gradient(90deg, var(--accent), #ff5db1) border-box;
+    margin-bottom: 14px;
+  }
+  .invented .tagline { font-size: .8rem; color: var(--accent); font-weight: 600; }
+  .invented .disclaimer { font-size: .76rem; color: var(--muted); margin-top: 8px; }
+  .reinvent {
+    background: #fff; border: 1px solid var(--line); border-radius: 999px;
+    padding: 5px 12px; cursor: pointer; font-size: .82rem; color: var(--ink);
+  }
+  .reinvent:hover { border-color: var(--accent); color: var(--accent); }
+
   /* Photo scan */
   .scan {
     background: var(--card); border: 2px dashed var(--line); border-radius: var(--radius);
@@ -165,8 +186,10 @@
       <select id="level" class="clear" title="Filter by skill level"></select>
       <select id="cuisine" class="clear" title="Filter by cuisine"></select>
       <label class="toggle"><input type="checkbox" id="only-makeable" /> Only what I can make</label>
+      <button class="invent" id="invent">✨ Invent a recipe</button>
       <button class="clear" id="clear">Clear</button>
     </div>
+    <div id="invented"></div>
     <div id="recipes" class="recipes"></div>
   </div>
 
@@ -428,8 +451,178 @@ function score(r) {
   return { got, missing, missingCore, pct, makeable: missing.length === 0, coreMakeable: missingCore.length === 0 };
 }
 
+// ---- Invent an original recipe from ONLY the selected ingredients ----
+const CATS = {
+  protein: ["eggs", "chicken", "beef", "bacon", "shrimp", "lobster", "fish", "tofu", "chickpeas", "beans"],
+  base: ["rice", "pasta", "noodles", "bread", "tortilla", "potato"],
+  aromatic: ["garlic", "onion", "scallion", "ginger", "chili"],
+  veg: ["tomato", "carrot", "broccoli", "bell pepper", "celery", "cucumber", "lettuce", "spinach", "avocado", "mushroom", "corn"],
+  dairy: ["cheese", "mozzarella", "feta", "milk", "yogurt"],
+  herb: ["basil", "cilantro", "parsley", "mint"],
+  acid: ["lemon", "lime"],
+  fat: ["olive oil", "oil", "sesame oil", "butter"],
+  spice: ["cumin", "curry powder", "pepper"],
+  sweet: ["banana", "honey", "sugar"],
+  liquid: ["coconut milk", "soy sauce"],
+};
+const ADJ = ["Rustic", "Zesty", "Golden", "Smoky", "Garden", "Speedy", "Cozy", "Fusion", "Wild", "Hearty", "Bright", "Sunset"];
+const cap = (s) => s.replace(/\b\w/g, c => c.toUpperCase());
+const jl = (a) => a.length <= 1 ? (a[0] || "") : a.slice(0, -1).join(", ") + " and " + a[a.length - 1];
+
+let inventActive = false;
+let inventSeed = 0;
+
+function invent(seed) {
+  const ings = Array.from(have);
+  if (!ings.length) return null;
+  const g = {};
+  for (const k in CATS) g[k] = ings.filter(i => CATS[k].includes(i));
+  const fat = g.fat[0] || "a splash of oil";
+  const adj = ADJ[seed % ADJ.length];
+  const season = `Season to taste${g.spice.length ? " with " + jl(g.spice) : ""} (and a pinch of salt).`;
+  const finish = (g.herb.length || g.acid.length)
+    ? `Finish with ${jl([...g.acid, ...g.herb])}.` : null;
+
+  const mainList = g.protein.concat(g.base, g.veg).slice(0, 2);
+  const nameMain = (mainList.length ? mainList : ings.slice(0, 2)).map(cap).join(" & ");
+
+  const isPastaNoodle = g.base.some(b => b === "pasta" || b === "noodles");
+  const isRice = g.base.includes("rice");
+  const isWrap = g.base.includes("bread") || g.base.includes("tortilla");
+  const isPotato = g.base.includes("potato");
+  const hotProtein = g.protein.filter(p => !["chickpeas", "beans"].includes(p));
+  const isSmoothie = g.sweet.length && (ings.includes("milk") || ings.includes("yogurt"))
+    && !g.base.length && !g.veg.length && !hotProtein.length;
+
+  let name, dish, time, steps;
+
+  if (isSmoothie) {
+    name = `${adj} ${nameMain} Smoothie`;
+    dish = "Blended drink"; time = 5;
+    steps = [
+      `Add ${jl(ings)} to a blender.`,
+      "Blend until completely smooth, adding a splash of water if needed.",
+      "Taste, adjust sweetness, and serve chilled.",
+    ];
+  } else if (isPastaNoodle) {
+    const b = g.base.find(x => x === "pasta" || x === "noodles");
+    name = `${adj} ${nameMain} ${b === "noodles" ? "Noodles" : "Pasta"}`;
+    dish = "One-pan " + b; time = 20;
+    steps = [
+      `Boil the ${b} in salted water until just tender, then drain.`,
+      g.aromatic.length ? `Gently sizzle ${jl(g.aromatic)} in ${fat}.` : `Warm ${fat} in a large pan.`,
+      hotProtein.length ? `Add ${jl(hotProtein)} and cook through.` : null,
+      g.veg.length ? `Toss in ${jl(g.veg)} and sauté until softened.` : null,
+      `Fold the ${b} back in${g.liquid.length ? " with " + jl(g.liquid) : ""}.`,
+      g.dairy.length ? `Stir through ${jl(g.dairy)} until silky.` : null,
+      finish, season,
+    ];
+  } else if (isRice) {
+    name = `${adj} ${nameMain} Rice Bowl`;
+    dish = "Rice bowl"; time = 20;
+    steps = [
+      "Cook the rice (or use leftovers) and keep it warm.",
+      g.aromatic.length ? `Sizzle ${jl(g.aromatic)} in ${fat}.` : `Heat ${fat} in a wide pan.`,
+      hotProtein.length ? `Add ${jl(hotProtein)} and cook until done.` : null,
+      g.veg.length ? `Stir-fry ${jl(g.veg)} until just tender.` : null,
+      `Add the rice and toss over high heat${g.liquid.length ? " with " + jl(g.liquid) : ""}.`,
+      g.dairy.length ? `Top with ${jl(g.dairy)}.` : null,
+      finish, season,
+    ];
+  } else if (isWrap) {
+    const b = g.base.includes("tortilla") ? "tortilla" : "bread";
+    name = `${adj} ${nameMain} ${b === "tortilla" ? "Wrap" : "Toast"}`;
+    dish = b === "tortilla" ? "Loaded wrap" : "Stacked toast"; time = 12;
+    steps = [
+      (hotProtein.length || g.veg.length || g.aromatic.length)
+        ? `Sauté ${jl([...g.aromatic, ...hotProtein, ...g.veg])} in ${fat} until cooked.`
+        : `Lightly warm your fillings in ${fat}.`,
+      b === "bread" ? "Toast the bread." : "Warm the tortilla in a dry pan.",
+      `Pile on the fillings${g.dairy.length ? " with " + jl(g.dairy) : ""}.`,
+      finish, season,
+      b === "tortilla" ? "Roll up tightly, slice, and serve." : "Top, slice, and serve.",
+    ];
+  } else if (isPotato) {
+    name = `${adj} ${nameMain} Hash`;
+    dish = "Skillet hash"; time = 30;
+    steps = [
+      `Cube the potato and fry in ${fat} until golden and crisp.`,
+      g.aromatic.length ? `Add ${jl(g.aromatic)} and cook until fragrant.` : null,
+      hotProtein.length ? `Add ${jl(hotProtein)} and brown.` : null,
+      g.veg.length ? `Stir in ${jl(g.veg)} until tender.` : null,
+      g.dairy.length ? `Scatter ${jl(g.dairy)} on top.` : null,
+      finish, season,
+    ];
+  } else if (ings.includes("eggs")) {
+    name = `${adj} ${nameMain} Frittata`;
+    dish = "Egg skillet"; time = 15;
+    steps = [
+      "Beat the eggs in a bowl.",
+      (g.aromatic.length || g.veg.length) ? `Sauté ${jl([...g.aromatic, ...g.veg])} in ${fat}.` : `Heat ${fat} in an oven-safe pan.`,
+      hotProtein.filter(p => p !== "eggs").length ? `Add ${jl(hotProtein.filter(p => p !== "eggs"))} and cook.` : null,
+      `Pour in the eggs${g.dairy.length ? " and add " + jl(g.dairy) : ""}; cook gently until set.`,
+      finish, season,
+    ];
+  } else if (g.liquid.includes("coconut milk")) {
+    name = `${adj} ${nameMain} Curry`;
+    dish = "Simmered curry"; time = 30;
+    steps = [
+      g.aromatic.length ? `Fry ${jl(g.aromatic)} in ${fat}.` : `Warm ${fat} in a pot.`,
+      g.spice.length ? `Toast ${jl(g.spice)} for a minute.` : null,
+      hotProtein.length ? `Add ${jl(hotProtein)} and seal.` : null,
+      "Pour in the coconut milk and bring to a gentle simmer.",
+      g.veg.length ? `Add ${jl(g.veg)} and cook until tender.` : null,
+      finish, season,
+    ];
+  } else if (hotProtein.length === 0 && g.veg.length && (g.acid.length || g.fat.length)) {
+    name = `${adj} ${nameMain} Salad`;
+    dish = "Fresh salad"; time = 10;
+    steps = [
+      `Chop and combine ${jl(g.veg)} in a bowl.`,
+      (g.protein.length || g.dairy.length) ? `Add ${jl([...g.protein, ...g.dairy])}.` : null,
+      `Dress with ${jl([...(g.fat.length ? [g.fat[0]] : []), ...g.acid])}.`,
+      finish, season, "Toss and serve.",
+    ];
+  } else {
+    name = `${adj} ${nameMain} Skillet`;
+    dish = "Skillet medley"; time = 20;
+    steps = [
+      g.aromatic.length ? `Heat ${fat} and sizzle ${jl(g.aromatic)}.` : `Heat ${fat} in a large pan.`,
+      hotProtein.length ? `Add ${jl(hotProtein)} and cook through.` : null,
+      g.veg.length ? `Add ${jl(g.veg)} and sauté until tender.` : null,
+      g.liquid.length ? `Splash in ${jl(g.liquid)}.` : null,
+      g.dairy.length ? `Finish with ${jl(g.dairy)}.` : null,
+      finish, season,
+    ];
+  }
+
+  return { name, dish, time, steps: steps.filter(Boolean), ingredients: ings };
+}
+
+function renderInvented() {
+  const box = document.getElementById("invented");
+  if (!inventActive || have.size === 0) { box.innerHTML = ""; return; }
+  const r = invent(inventSeed);
+  if (!r) { box.innerHTML = ""; return; }
+  const pills = r.ingredients.map(i => `<span class="pill have" title="${i}">${emoji(i)}</span>`).join("");
+  box.innerHTML = `
+    <div class="recipe invented">
+      <div class="tagline">✨ Invented just for you</div>
+      <h3>${r.name}</h3>
+      <div class="meta">${r.dish} · ⏱ ~${r.time} min · uses ${r.ingredients.length} of your ingredients</div>
+      <div class="ings">${pills}</div>
+      <ol class="steps">${r.steps.map(s => `<li>${s}</li>`).join("")}</ol>
+      <div style="margin-top:10px;display:flex;gap:10px;align-items:center;">
+        <button class="reinvent">🎲 Reinvent</button>
+        <span class="disclaimer">Auto-generated idea — trust your taste and judgement.</span>
+      </div>
+    </div>`;
+  box.querySelector(".reinvent").onclick = () => { inventSeed++; renderInvented(); };
+}
+
 function render() {
   recipesEl.innerHTML = "";
+  renderInvented();
   if (have.size === 0) {
     recipesEl.innerHTML = '<div class="empty">Tap a few ingredients above to see what you can cook. ✨</div>';
     countEl.textContent = "";
@@ -486,6 +679,18 @@ document.getElementById("clear").onclick = () => {
   render();
 };
 onlyEl.addEventListener("change", render);
+
+document.getElementById("invent").onclick = () => {
+  if (have.size === 0) {
+    document.getElementById("invented").innerHTML =
+      '<div class="empty">Pick some ingredients first, then I\'ll invent a recipe. ✨</div>';
+    return;
+  }
+  inventActive = true;
+  inventSeed++;
+  renderInvented();
+  document.getElementById("invented").scrollIntoView({ behavior: "smooth", block: "nearest" });
+};
 
 // ---- Photo scanning (in-browser, no backend) ----
 // Maps labels from a general image model to ingredients in our list.
