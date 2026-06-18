@@ -162,6 +162,7 @@
       <div class="section-title" style="margin:0;"><span class="step">2</span> Your recipes</div>
       <span id="count" class="count"></span>
       <span class="spacer"></span>
+      <select id="cuisine" class="clear" title="Filter by cuisine"></select>
       <label class="toggle"><input type="checkbox" id="only-makeable" /> Only what I can make</label>
       <button class="clear" id="clear">Clear</button>
     </div>
@@ -180,64 +181,113 @@ const ING = {
   "bell pepper": "🫑", avocado: "🥑", lime: "🍋", cilantro: "🌿",
   mozzarella: "🧀", chicken: "🍗", celery: "🥬", banana: "🍌", honey: "🍯",
   yogurt: "🥣", chickpeas: "🫘", lemon: "🍋", tortilla: "🫓", lettuce: "🥬",
+  chili: "🌶️", beans: "🫘", ginger: "🫚", cumin: "🥄", "curry powder": "🍛",
+  "coconut milk": "🥥", noodles: "🍜", "sesame oil": "🫗", scallion: "🧅",
+  cucumber: "🥒", feta: "🧀", potato: "🥔", spinach: "🥬", bacon: "🥓",
 };
 const emoji = (i) => ING[i] || "🥄";
 
+// Cuisines with a flag/icon for a friendly cultural label.
+const CUISINE_EMOJI = {
+  Italian: "🇮🇹", Mexican: "🇲🇽", Chinese: "🇨🇳", Indian: "🇮🇳", Japanese: "🇯🇵",
+  Thai: "🇹🇭", French: "🇫🇷", Greek: "🇬🇷", "Middle Eastern": "🥙", American: "🇺🇸",
+  British: "🇬🇧", Korean: "🇰🇷", Spanish: "🇪🇸", Mediterranean: "🫒", Comfort: "🍲", Healthy: "🥗",
+};
+const cuisineTag = (c) => `${CUISINE_EMOJI[c] || "🍽️"} ${c}`;
+
 const RECIPES = [
-  { name: "Classic Omelette", time: "10 min", serves: 1,
+  { name: "Classic Omelette", cuisine: "French", time: "10 min", serves: 1,
     ingredients: ["eggs", "butter", "salt", "pepper", "cheese"],
     steps: ["Beat eggs with salt and pepper.", "Melt butter in a pan over medium heat.", "Pour in eggs, swirl, and let set.", "Add cheese, fold, and serve."] },
-  { name: "Tomato Pasta", time: "20 min", serves: 2,
+  { name: "Tomato Pasta", cuisine: "Italian", time: "20 min", serves: 2,
     ingredients: ["pasta", "tomato", "garlic", "olive oil", "salt", "basil"],
     steps: ["Boil pasta in salted water until al dente.", "Sauté garlic in olive oil.", "Add chopped tomato and simmer 10 min.", "Toss with pasta and fresh basil."] },
-  { name: "Fried Rice", time: "15 min", serves: 2,
+  { name: "Fried Rice", cuisine: "Chinese", time: "15 min", serves: 2,
     ingredients: ["rice", "eggs", "onion", "carrot", "soy sauce", "garlic", "oil"],
     steps: ["Scramble eggs and set aside.", "Fry onion, carrot and garlic in oil.", "Add cooked rice and soy sauce.", "Stir in eggs and serve hot."] },
-  { name: "Grilled Cheese", time: "8 min", serves: 1,
+  { name: "Grilled Cheese", cuisine: "American", time: "8 min", serves: 1,
     ingredients: ["bread", "cheese", "butter"],
     steps: ["Butter the outside of two bread slices.", "Place cheese between them.", "Grill in a pan until golden both sides."] },
-  { name: "Pancakes", time: "20 min", serves: 3,
+  { name: "Pancakes", cuisine: "American", time: "20 min", serves: 3,
     ingredients: ["flour", "eggs", "milk", "sugar", "butter", "salt"],
     steps: ["Whisk flour, sugar and salt.", "Add eggs and milk; mix to a batter.", "Cook ladles of batter in buttered pan.", "Flip when bubbles form."] },
-  { name: "Veggie Stir-Fry", time: "15 min", serves: 2,
+  { name: "Veggie Stir-Fry", cuisine: "Chinese", time: "15 min", serves: 2,
     ingredients: ["broccoli", "carrot", "bell pepper", "garlic", "soy sauce", "oil"],
     steps: ["Heat oil in a wok.", "Add garlic, then the vegetables.", "Stir-fry on high heat 5–6 min.", "Splash soy sauce and serve."] },
-  { name: "Guacamole", time: "10 min", serves: 4,
+  { name: "Guacamole", cuisine: "Mexican", time: "10 min", serves: 4,
     ingredients: ["avocado", "lime", "onion", "tomato", "salt", "cilantro"],
     steps: ["Mash avocado with salt and lime.", "Stir in diced onion and tomato.", "Fold in chopped cilantro."] },
-  { name: "Caprese Salad", time: "10 min", serves: 2,
+  { name: "Caprese Salad", cuisine: "Italian", time: "10 min", serves: 2,
     ingredients: ["tomato", "mozzarella", "basil", "olive oil", "salt"],
     steps: ["Slice tomato and mozzarella.", "Layer with basil leaves.", "Drizzle olive oil, season with salt."] },
-  { name: "Chicken Soup", time: "40 min", serves: 4,
+  { name: "Chicken Soup", cuisine: "Comfort", time: "40 min", serves: 4,
     ingredients: ["chicken", "carrot", "onion", "celery", "salt", "pepper", "garlic"],
     steps: ["Simmer chicken with water, onion and garlic.", "Add chopped carrot and celery.", "Season and cook until tender."] },
-  { name: "Banana Smoothie", time: "5 min", serves: 1,
+  { name: "Banana Smoothie", cuisine: "Healthy", time: "5 min", serves: 1,
     ingredients: ["banana", "milk", "honey", "yogurt"],
     steps: ["Add banana, milk, yogurt and honey to a blender.", "Blend until smooth.", "Serve chilled."] },
-  { name: "Eggs on Toast", time: "10 min", serves: 1,
+  { name: "Eggs on Toast", cuisine: "British", time: "10 min", serves: 1,
     ingredients: ["eggs", "bread", "butter", "salt", "milk"],
     steps: ["Whisk eggs with a splash of milk and salt.", "Cook gently in butter, stirring.", "Serve over toasted, buttered bread."] },
-  { name: "Garlic Butter Rice", time: "20 min", serves: 2,
+  { name: "Garlic Butter Rice", cuisine: "Comfort", time: "20 min", serves: 2,
     ingredients: ["rice", "garlic", "butter", "salt"],
     steps: ["Cook rice until fluffy.", "Sauté garlic in butter.", "Toss rice through garlic butter and salt."] },
-  { name: "Tomato & Egg", time: "12 min", serves: 2,
+  { name: "Tomato & Egg", cuisine: "Chinese", time: "12 min", serves: 2,
     ingredients: ["eggs", "tomato", "salt", "sugar", "oil", "onion"],
     steps: ["Scramble eggs lightly and set aside.", "Cook onion and tomato with a little sugar.", "Return eggs, season and combine."] },
-  { name: "Hummus", time: "10 min", serves: 4,
+  { name: "Hummus", cuisine: "Middle Eastern", time: "10 min", serves: 4,
     ingredients: ["chickpeas", "garlic", "lemon", "olive oil", "salt"],
     steps: ["Blend chickpeas with garlic and lemon.", "Add olive oil until smooth.", "Season with salt to taste."] },
-  { name: "Pizza Toast", time: "12 min", serves: 2,
+  { name: "Pizza Toast", cuisine: "Italian", time: "12 min", serves: 2,
     ingredients: ["bread", "tomato", "mozzarella", "basil", "olive oil"],
     steps: ["Top bread with sliced tomato and mozzarella.", "Bake until cheese melts.", "Finish with basil and olive oil."] },
-  { name: "Veggie Quesadilla", time: "12 min", serves: 2,
+  { name: "Veggie Quesadilla", cuisine: "Mexican", time: "12 min", serves: 2,
     ingredients: ["tortilla", "cheese", "bell pepper", "onion", "oil"],
     steps: ["Sauté pepper and onion in oil.", "Fill tortilla with cheese and veggies.", "Toast in a dry pan until crisp; slice."] },
-  { name: "Yogurt Bowl", time: "5 min", serves: 1,
+  { name: "Yogurt Bowl", cuisine: "Healthy", time: "5 min", serves: 1,
     ingredients: ["yogurt", "honey", "banana"],
     steps: ["Spoon yogurt into a bowl.", "Top with sliced banana.", "Drizzle with honey."] },
-  { name: "Green Salad", time: "8 min", serves: 2,
+  { name: "Green Salad", cuisine: "Mediterranean", time: "8 min", serves: 2,
     ingredients: ["lettuce", "tomato", "onion", "olive oil", "lemon", "salt"],
     steps: ["Tear lettuce; add chopped tomato and onion.", "Whisk olive oil, lemon and salt.", "Toss together and serve."] },
+
+  // --- More cultural options ---
+  { name: "Spaghetti Aglio e Olio", cuisine: "Italian", time: "15 min", serves: 2,
+    ingredients: ["pasta", "garlic", "olive oil", "chili", "salt", "basil"],
+    steps: ["Boil pasta until al dente.", "Gently warm sliced garlic and chili in olive oil.", "Toss pasta in the oil with a splash of pasta water.", "Finish with basil and salt."] },
+  { name: "Bean Tacos", cuisine: "Mexican", time: "15 min", serves: 2,
+    ingredients: ["tortilla", "beans", "tomato", "onion", "cilantro", "lime", "cheese"],
+    steps: ["Warm beans with a little onion.", "Heat tortillas in a dry pan.", "Fill with beans, tomato, onion and cheese.", "Top with cilantro and a squeeze of lime."] },
+  { name: "Chana Masala", cuisine: "Indian", time: "30 min", serves: 3,
+    ingredients: ["chickpeas", "tomato", "onion", "garlic", "ginger", "cumin", "curry powder", "oil"],
+    steps: ["Fry onion, garlic and ginger in oil.", "Add cumin and curry powder; toast briefly.", "Add chopped tomato and cook to a sauce.", "Add chickpeas, simmer 10 min, and season."] },
+  { name: "Tamago Gohan", cuisine: "Japanese", time: "5 min", serves: 1,
+    ingredients: ["rice", "eggs", "soy sauce"],
+    steps: ["Cook rice and keep it hot.", "Crack an egg over the hot rice.", "Add soy sauce and mix quickly to coat."] },
+  { name: "Garlic Soy Noodles", cuisine: "Chinese", time: "12 min", serves: 2,
+    ingredients: ["noodles", "garlic", "soy sauce", "sesame oil", "scallion"],
+    steps: ["Boil the noodles and drain.", "Sizzle garlic in sesame oil.", "Toss noodles with soy sauce and garlic oil.", "Scatter sliced scallion on top."] },
+  { name: "Shakshuka", cuisine: "Middle Eastern", time: "25 min", serves: 2,
+    ingredients: ["eggs", "tomato", "bell pepper", "onion", "garlic", "cumin", "olive oil"],
+    steps: ["Soften onion, pepper and garlic in olive oil.", "Add tomato and cumin; simmer to a sauce.", "Make wells and crack in the eggs.", "Cover and cook until eggs set."] },
+  { name: "Greek Salad", cuisine: "Greek", time: "10 min", serves: 2,
+    ingredients: ["tomato", "cucumber", "onion", "feta", "olive oil", "lemon"],
+    steps: ["Chop tomato, cucumber and onion.", "Crumble over the feta.", "Dress with olive oil and lemon."] },
+  { name: "Thai Coconut Curry", cuisine: "Thai", time: "25 min", serves: 3,
+    ingredients: ["coconut milk", "chicken", "bell pepper", "garlic", "ginger", "curry powder", "lime"],
+    steps: ["Fry garlic, ginger and curry powder.", "Add chicken and brown lightly.", "Pour in coconut milk and pepper; simmer.", "Finish with a squeeze of lime."] },
+  { name: "Ratatouille", cuisine: "French", time: "35 min", serves: 4,
+    ingredients: ["tomato", "bell pepper", "onion", "garlic", "olive oil", "basil"],
+    steps: ["Soften onion and garlic in olive oil.", "Add pepper, then tomato.", "Simmer gently until everything is tender.", "Finish with torn basil."] },
+  { name: "Bibimbap Bowl", cuisine: "Korean", time: "25 min", serves: 2,
+    ingredients: ["rice", "eggs", "carrot", "spinach", "soy sauce", "sesame oil"],
+    steps: ["Cook rice and divide into bowls.", "Quickly sauté carrot and spinach separately.", "Fry an egg per bowl.", "Top rice with veg and egg; drizzle soy and sesame oil."] },
+  { name: "Spanish Tortilla", cuisine: "Spanish", time: "30 min", serves: 4,
+    ingredients: ["eggs", "potato", "onion", "olive oil", "salt"],
+    steps: ["Slowly cook sliced potato and onion in olive oil.", "Beat eggs with salt; mix in the potato.", "Cook in the pan until just set.", "Flip and finish; rest before slicing."] },
+  { name: "BLT Sandwich", cuisine: "American", time: "12 min", serves: 1,
+    ingredients: ["bread", "bacon", "lettuce", "tomato"],
+    steps: ["Crisp the bacon in a pan.", "Toast the bread.", "Layer bacon, lettuce and sliced tomato.", "Close the sandwich and slice."] },
 ];
 
 // Pantry staples — if these are the only thing missing, the recipe still counts as makeable.
@@ -257,6 +307,15 @@ const gridEl = document.getElementById("grid");
 const recipesEl = document.getElementById("recipes");
 const countEl = document.getElementById("count");
 const onlyEl = document.getElementById("only-makeable");
+const cuisineEl = document.getElementById("cuisine");
+
+// Populate the cuisine filter from the recipe list.
+(function buildCuisineFilter() {
+  const cuisines = Array.from(new Set(RECIPES.map(r => r.cuisine))).sort();
+  cuisineEl.innerHTML = '<option value="">🌍 All cuisines</option>' +
+    cuisines.map(c => `<option value="${c}">${cuisineTag(c)}</option>`).join("");
+  cuisineEl.addEventListener("change", render);
+})();
 
 // Ingredients shown as tiles — starts with the recipe set, grows as users type custom ones.
 const tiles = ALL.slice();
@@ -336,6 +395,7 @@ function render() {
   }
 
   let list = RECIPES.map(r => ({ r, s: score(r) })).filter(x => x.s.got.length > 0);
+  if (cuisineEl.value) list = list.filter(x => x.r.cuisine === cuisineEl.value);
   if (onlyEl.checked) list = list.filter(x => x.s.coreMakeable);
   list.sort((a, b) => b.s.pct - a.s.pct || a.s.missing.length - b.s.missing.length);
 
@@ -355,7 +415,7 @@ function render() {
       ? `<span class="badge">${s.makeable ? "Ready to cook" : "Just need staples"}</span>` : "";
     card.innerHTML = `
       <h3>${r.name}${badge}</h3>
-      <div class="meta">⏱ ${r.time} · serves ${r.serves}</div>
+      <div class="meta">${cuisineTag(r.cuisine)} · ⏱ ${r.time} · serves ${r.serves}</div>
       <div class="progress"><span style="width:${s.pct}%"></span></div>
       <div class="match">You have <b>${s.got.length}/${r.ingredients.length}</b></div>
       <div class="ings">${pills}</div>
