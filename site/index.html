@@ -184,6 +184,7 @@ const ING = {
   chili: "🌶️", beans: "🫘", ginger: "🫚", cumin: "🥄", "curry powder": "🍛",
   "coconut milk": "🥥", noodles: "🍜", "sesame oil": "🫗", scallion: "🧅",
   cucumber: "🥒", feta: "🧀", potato: "🥔", spinach: "🥬", bacon: "🥓",
+  lobster: "🦞", shrimp: "🦐", parsley: "🌿", fish: "🐟",
 };
 const emoji = (i) => ING[i] || "🥄";
 
@@ -288,6 +289,20 @@ const RECIPES = [
   { name: "BLT Sandwich", cuisine: "American", time: "12 min", serves: 1,
     ingredients: ["bread", "bacon", "lettuce", "tomato"],
     steps: ["Crisp the bacon in a pan.", "Toast the bread.", "Layer bacon, lettuce and sliced tomato.", "Close the sandwich and slice."] },
+
+  // --- Seafood ---
+  { name: "Garlic Butter Lobster", cuisine: "American", time: "20 min", serves: 2,
+    ingredients: ["lobster", "butter", "garlic", "lemon", "parsley", "salt"],
+    steps: ["Split the lobster and season with salt.", "Melt butter with minced garlic.", "Brush lobster with garlic butter and grill or bake until opaque.", "Finish with lemon and chopped parsley."] },
+  { name: "Lobster Pasta", cuisine: "Italian", time: "25 min", serves: 2,
+    ingredients: ["lobster", "pasta", "tomato", "garlic", "olive oil", "chili"],
+    steps: ["Boil pasta until al dente.", "Sauté garlic and chili in olive oil.", "Add tomato and the lobster meat; simmer briefly.", "Toss with pasta and serve."] },
+  { name: "Gambas al Ajillo", cuisine: "Spanish", time: "12 min", serves: 2,
+    ingredients: ["shrimp", "garlic", "olive oil", "chili", "lemon", "parsley"],
+    steps: ["Warm olive oil with sliced garlic and chili.", "Add shrimp and cook until pink.", "Squeeze in lemon and scatter parsley.", "Serve sizzling with bread."] },
+  { name: "Shrimp Fried Rice", cuisine: "Chinese", time: "15 min", serves: 2,
+    ingredients: ["shrimp", "rice", "eggs", "garlic", "soy sauce", "scallion", "oil"],
+    steps: ["Fry shrimp in oil and set aside.", "Scramble eggs, then add garlic and rice.", "Return shrimp with soy sauce; toss.", "Finish with sliced scallion."] },
 ];
 
 // Pantry staples — if these are the only thing missing, the recipe still counts as makeable.
@@ -401,7 +416,18 @@ function render() {
 
   countEl.textContent = list.length ? `${list.length} found` : "";
   if (list.length === 0) {
-    recipesEl.innerHTML = '<div class="empty">Nothing matches yet — add more ingredients or untick the filter.</div>';
+    const usedByAny = new Set();
+    RECIPES.forEach(r => r.ingredients.forEach(i => usedByAny.add(i)));
+    const unknown = Array.from(have).filter(i => !usedByAny.has(i));
+    let msg;
+    if (cuisineEl.value) {
+      msg = `No <b>${cuisineTag(cuisineEl.value)}</b> recipe matches your ingredients yet — try “🌍 All cuisines” or add more.`;
+    } else if (unknown.length) {
+      msg = `We don't have a recipe using <b>${unknown.map(i => `${emoji(i)} ${i}`).join(", ")}</b> yet. Try adding a few more common ingredients alongside it.`;
+    } else {
+      msg = "Nothing matches yet — add a few more ingredients.";
+    }
+    recipesEl.innerHTML = `<div class="empty">${msg}</div>`;
     return;
   }
 
