@@ -116,6 +116,19 @@
   #scan-status { font-size: .85rem; color: var(--ink); margin: 0 4px 6px; min-height: 1.1em; }
   #scan-status .ok { color: var(--good); }
   #scan-status .warn { color: var(--accent); }
+
+  /* Manual text input */
+  .type-row { display: flex; gap: 8px; margin-bottom: 12px; }
+  .type-row input {
+    flex: 1; font-size: 1rem; padding: 11px 14px;
+    border: 2px solid var(--line); border-radius: 999px; outline: none; color: var(--ink); background: var(--card);
+  }
+  .type-row input:focus { border-color: var(--accent); }
+  .type-row button {
+    border: none; cursor: pointer; background: var(--accent); color: #fff; font-weight: 600;
+    border-radius: 999px; padding: 0 18px; font-size: .95rem;
+  }
+  .type-row button:hover { filter: brightness(1.05); }
 </style>
 </head>
 <body>
@@ -136,6 +149,12 @@
       <span class="info">Upload or snap a photo of your ingredients — we'll auto-select what we recognize. Then tap to confirm or correct.</span>
     </div>
     <div id="scan-status"></div>
+
+    <div class="type-row">
+      <input id="type-input" type="text" list="ing-list" placeholder="Or type an ingredient and press Enter…" autocomplete="off" />
+      <datalist id="ing-list"></datalist>
+      <button id="type-add">Add</button>
+    </div>
 
     <div id="grid" class="grid"></div>
 
@@ -239,21 +258,66 @@ const recipesEl = document.getElementById("recipes");
 const countEl = document.getElementById("count");
 const onlyEl = document.getElementById("only-makeable");
 
+// Ingredients shown as tiles — starts with the recipe set, grows as users type custom ones.
+const tiles = ALL.slice();
+
+function makeTile(ing) {
+  const t = document.createElement("div");
+  t.className = "tile" + (have.has(ing) ? " selected" : "");
+  t.dataset.ing = ing;
+  t.innerHTML = `<span class="check">✓</span><span class="emoji">${emoji(ing)}</span><span class="name">${ing}</span>`;
+  t.onclick = () => {
+    if (have.has(ing)) have.delete(ing); else have.add(ing);
+    t.classList.toggle("selected", have.has(ing));
+    render();
+  };
+  return t;
+}
+
 function buildGrid() {
   gridEl.innerHTML = "";
-  ALL.forEach(ing => {
-    const t = document.createElement("div");
-    t.className = "tile";
-    t.dataset.ing = ing;
-    t.innerHTML = `<span class="check">✓</span><span class="emoji">${emoji(ing)}</span><span class="name">${ing}</span>`;
-    t.onclick = () => {
-      if (have.has(ing)) have.delete(ing); else have.add(ing);
-      t.classList.toggle("selected", have.has(ing));
-      render();
-    };
-    gridEl.appendChild(t);
-  });
+  tiles.forEach(ing => gridEl.appendChild(makeTile(ing)));
 }
+
+// Normalize typed text to match known ingredients (handles plurals/case/spacing).
+function normalizeTyped(raw) {
+  const t = raw.trim().toLowerCase().replace(/\s+/g, " ");
+  if (!t) return null;
+  if (tiles.includes(t)) return t;
+  const singular = t.replace(/s$/, "");
+  const hit = tiles.find(i => i === t || i === singular || i.replace(/s$/, "") === singular);
+  return hit || t; // fall back to the custom text
+}
+
+// Add an ingredient by name: select its tile, creating one if it's new.
+function addByName(raw) {
+  const ing = normalizeTyped(raw);
+  if (!ing) return;
+  have.add(ing);
+  if (!tiles.includes(ing)) {
+    tiles.push(ing);
+    gridEl.appendChild(makeTile(ing));
+    refreshDatalist();
+  } else {
+    const tile = gridEl.querySelector(`.tile[data-ing="${CSS.escape(ing)}"]`);
+    if (tile) tile.classList.add("selected");
+  }
+  render();
+}
+
+function refreshDatalist() {
+  const dl = document.getElementById("ing-list");
+  dl.innerHTML = tiles.map(i => `<option value="${i}"></option>`).join("");
+}
+
+const typeInput = document.getElementById("type-input");
+function commitTyped() {
+  const v = typeInput.value;
+  if (v.trim()) { addByName(v); typeInput.value = ""; }
+  typeInput.focus();
+}
+document.getElementById("type-add").onclick = commitTyped;
+typeInput.addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); commitTyped(); } });
 
 function score(r) {
   const got = r.ingredients.filter(i => have.has(i));
@@ -397,6 +461,7 @@ photoEl.addEventListener("change", async (e) => {
 });
 
 buildGrid();
+refreshDatalist();
 render();
 </script>
 </body>
