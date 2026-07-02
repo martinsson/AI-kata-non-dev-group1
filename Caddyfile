@@ -1,0 +1,8 @@
+# Railway injects $PORT at runtime; fall back to 80 for local `docker run`.
+:{$PORT:80} {
+	root * /srv
+	encode gzip
+	# Serve real files first; fall back to index.html for client-side routing.
+	try_files {path} {path}/ /index.html
+	file_server
+}

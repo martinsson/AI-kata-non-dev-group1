@@ -1,0 +1,32 @@
+name: Deploy site to Railway
+
+# Deploys the static site/ folder to the Railway "web" service
+# (project: keen-caring, environment: production) on push to main.
+# Uses the repo secret RAILWAY_TOKEN (a Railway project token).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "Dockerfile"
+      - "Caddyfile"
+      - "railway.json"
+      - ".github/workflows/railway.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: railway-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+      - name: Deploy to Railway
+        run: railway up --service web --ci
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
