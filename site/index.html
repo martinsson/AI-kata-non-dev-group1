@@ -40,22 +40,41 @@
   .hand{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;max-width:min(94vw,700px)}
   .hand.vert{flex-direction:column;gap:3px}
   .card{
-    width:44px;height:62px;border-radius:6px;background:#fff;color:#111;
-    display:flex;flex-direction:column;justify-content:space-between;
-    padding:3px 4px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.4);
-    user-select:none;flex:0 0 auto;
+    position:relative;width:44px;height:62px;border-radius:7px;flex:0 0 auto;
+    font-family:Georgia,"Times New Roman",serif;font-weight:700;overflow:hidden;color:#1c1c1c;
+    background:linear-gradient(160deg,#ffffff,#f5f4ef);border:1px solid #d5d5cd;
+    box-shadow:0 2px 5px #0006, inset 0 0 0 2px #ffffff, inset 0 0 0 3px #ece9df;
+    user-select:none;
   }
-  .card.sm{width:30px;height:42px;font-size:.62rem;padding:2px 3px}
-  .card .r{font-size:.85rem;line-height:1}
-  .card .s{font-size:1rem;text-align:right;line-height:1}
-  .card.red{color:#c0392b}
+  .card.sm{width:30px;height:42px;border-radius:5px}
+  .card.red{color:#c62828}
+  .idx{position:absolute;display:flex;flex-direction:column;align-items:center;line-height:.85;z-index:3}
+  .idx.tl{top:3px;left:4px}
+  .idx.br{bottom:3px;right:4px;transform:rotate(180deg)}
+  .idx .r{font-size:.62rem}
+  .idx .s{font-size:.5rem}
+  .card.sm .idx.tl{top:2px;left:3px}
+  .card.sm .idx.br{bottom:2px;right:3px}
+  .card.sm .idx .r{font-size:.46rem}
+  .card.sm .idx .s{font-size:.38rem}
+  .field{position:absolute;inset:20% 16%}
+  .pip{position:absolute;transform:translate(-50%,-50%);font-size:.5rem;line-height:1}
+  .pip.flip{transform:translate(-50%,-50%) rotate(180deg)}
+  .pip.big{font-size:1.5rem}
+  .card.sm .pip{font-size:.36rem}
+  .card.sm .pip.big{font-size:1rem}
+  .court{position:absolute;inset:10% 12%;border:1px solid #c9a24a;border-radius:3px;
+    background:linear-gradient(180deg,#fffdf6,#f3eddb);overflow:hidden}
+  .court svg{width:100%;height:100%;display:block}
   .card.back{
-    background:repeating-linear-gradient(45deg,#7b1f2b,#7b1f2b 5px,#5c141d 5px,#5c141d 10px);
-    border:2px solid #e8c56b;
+    background:repeating-linear-gradient(45deg,#1c3a6e 0 5px,#16305c 5px 10px),#17325f;
+    box-shadow:0 2px 5px #0006, inset 0 0 0 3px #f5f4ef, inset 0 0 0 4px #c9a24a;
   }
-  .card.playable{cursor:pointer;outline:2px solid var(--legal);box-shadow:0 0 10px var(--legal);transform:translateY(-4px)}
+  .card.back .emblem{position:absolute;inset:0;display:grid;place-items:center;color:#d8b25f;font-size:1.1rem}
+  .card.playable{cursor:pointer;outline:2px solid var(--legal);outline-offset:1px;
+    filter:drop-shadow(0 0 6px var(--legal));transform:translateY(-4px);z-index:5}
   .card.playable:hover{transform:translateY(-9px)}
-  .card.dim{opacity:.45}
+  .card.dim{opacity:.5}
   #center{
     position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
     width:210px;height:210px;display:grid;
@@ -478,14 +497,90 @@ function highlightHuman(){
   render();
 }
 
+/* ---------- Illustrations des figures (SVG, style classique) ---------- */
+const ROBE={true:{robe:"#b3202a",robeD:"#8c1822"}, false:{robe:"#33414f",robeD:"#232e39"}};
+const SK="#edc4a0", GD="#d4af37", GDD="#a8842a", HR="#6b4a2b", WH="#f4efe4";
+function svgBadge(sym,sc){
+  return `<circle cx="40" cy="94" r="8.5" fill="${WH}" stroke="${GD}" stroke-width="1.4"/>`
+    +`<text x="40" y="98.5" text-anchor="middle" font-family="Georgia,serif" font-weight="700" font-size="12" fill="${sc}">${sym}</text>`;
+}
+function svgRobe(c){
+  return `<path d="M14 112 L19 62 Q40 54 61 62 L66 112 Z" fill="${c.robe}"/>`
+    +`<path d="M40 60 L40 112" stroke="${c.robeD}" stroke-width="1.4"/>`;
+}
+function svgRoi(c,sym,sc){return `<svg viewBox="0 0 80 112">${svgRobe(c)}
+  <path d="M27 60 L40 73 L53 60 L40 55 Z" fill="${WH}" stroke="#d8c7a0"/>
+  <rect x="35.5" y="51" width="9" height="10" fill="${SK}"/>
+  <circle cx="40" cy="44" r="13" fill="${SK}"/>
+  <path d="M28 46 Q40 41 52 46 Q52 63 40 67 Q28 63 28 46 Z" fill="#efe9dd"/>
+  <circle cx="35.5" cy="43" r="1.6" fill="#3a2b22"/><circle cx="44.5" cy="43" r="1.6" fill="#3a2b22"/>
+  <path d="M24 31 L24 21 L31 27 L36 15 L40 26 L44 15 L49 27 L56 21 L56 31 Z" fill="${GD}" stroke="${GDD}"/>
+  <rect x="24" y="31" width="32" height="4" fill="${GDD}"/>
+  <circle cx="36" cy="13" r="2.1" fill="#c62828"/><circle cx="44" cy="13" r="2.1" fill="#2a6cc6"/><circle cx="40" cy="24" r="1.8" fill="#c62828"/>
+  <line x1="63" y1="45" x2="63" y2="74" stroke="#8a6d2f" stroke-width="2.6"/>
+  <circle cx="63" cy="42" r="4" fill="${GD}" stroke="${GDD}"/>
+  ${svgBadge(sym,sc)}</svg>`;}
+function svgDame(c,sym,sc){return `<svg viewBox="0 0 80 112">${svgRobe(c)}
+  <path d="M24 62 L40 72 L56 62 L48 56 L40 58 L32 56 Z" fill="${WH}" stroke="#d8c7a0"/>
+  <rect x="35.5" y="52" width="9" height="9" fill="${SK}"/>
+  <path d="M26 40 Q22 60 31 66 L33 44 Z" fill="${HR}"/><path d="M54 40 Q58 60 49 66 L47 44 Z" fill="${HR}"/>
+  <circle cx="40" cy="45" r="12.5" fill="${SK}"/>
+  <circle cx="35.5" cy="44" r="1.5" fill="#3a2b22"/><circle cx="44.5" cy="44" r="1.5" fill="#3a2b22"/>
+  <path d="M28 31 L31 23 L35 29 L40 20 L45 29 L49 23 L52 31 Z" fill="${GD}" stroke="${GDD}"/>
+  <rect x="28" y="31" width="24" height="3.4" fill="${GDD}"/>
+  <circle cx="40" cy="19" r="2" fill="#c62828"/><circle cx="35" cy="27" r="1.5" fill="#2a6cc6"/><circle cx="45" cy="27" r="1.5" fill="#2a6cc6"/>
+  <line x1="60" y1="56" x2="60" y2="76" stroke="#3f7d4f" stroke-width="2"/>
+  <circle cx="56" cy="50" r="3" fill="#e58fb0"/><circle cx="64" cy="50" r="3" fill="#e58fb0"/><circle cx="60" cy="46" r="3" fill="#e58fb0"/><circle cx="60" cy="54" r="3" fill="#e58fb0"/>
+  <circle cx="60" cy="50" r="2.4" fill="#e9b64a"/>
+  ${svgBadge(sym,sc)}</svg>`;}
+function svgValet(c,sym,sc){return `<svg viewBox="0 0 80 112">${svgRobe(c)}
+  <path d="M30 60 Q40 69 50 60 Q47 55 40 55 Q33 55 30 60 Z" fill="${WH}" stroke="#d8c7a0"/>
+  <rect x="36" y="52" width="8" height="8" fill="${SK}"/>
+  <circle cx="40" cy="45" r="12" fill="${SK}"/>
+  <circle cx="35.5" cy="45" r="1.5" fill="#3a2b22"/><circle cx="44.5" cy="45" r="1.5" fill="#3a2b22"/>
+  <path d="M25 35 Q40 19 55 35 Q55 30 40 28 Q25 30 25 35 Z" fill="${c.robe}" stroke="${c.robeD}"/>
+  <path d="M53 31 Q66 20 61 36 Q58 30 53 31 Z" fill="#3f8f5c" stroke="#2c6b43"/>
+  <line x1="60" y1="42" x2="66" y2="98" stroke="#6b4a2b" stroke-width="2.6"/>
+  <polygon points="59,40 71,45 59,51" fill="#c3c3c9" stroke="#7a7a80"/>
+  ${svgBadge(sym,sc)}</svg>`;}
+const COURT_FN={J:svgValet,Q:svgDame,K:svgRoi};
+
+function pipLayout(rank){
+  const L=0.26,C=0.5,R=0.74,c3=[0.16,0.5,0.84],c4=[0.13,0.38,0.62,0.87];
+  switch(rank){
+    case "A": return [[C,0.5,1]];
+    case "7": return [...c3.map(y=>[L,y]),...c3.map(y=>[R,y]),[C,0.33]];
+    case "8": return [...c3.map(y=>[L,y]),...c3.map(y=>[R,y]),[C,0.33],[C,0.67]];
+    case "9": return [...c4.map(y=>[L,y]),...c4.map(y=>[R,y]),[C,0.5]];
+    case "10":return [...c4.map(y=>[L,y]),...c4.map(y=>[R,y]),[C,0.27],[C,0.73]];
+    default:  return [];
+  }
+}
+
 /* ---------- Rendu ---------- */
 function cardEl(card, cls=""){
+  const su=SUITS[card.suit], sym=su.sym, sc=su.red?"#c62828":"#1c1c1c";
   const d=document.createElement("div");
-  d.className="card "+cls+(SUITS[card.suit].red?" red":"");
-  d.innerHTML=`<div class="r">${LABEL[card.rank]}</div><div class="s">${SUITS[card.suit].sym}</div>`;
+  d.className="card "+cls+(su.red?" red":"");
+  let center;
+  if(COURT_FN[card.rank]){
+    center=`<div class="court">${COURT_FN[card.rank](ROBE[su.red],sym,sc)}</div>`;
+  } else {
+    center=`<div class="field">`+pipLayout(card.rank).map(([x,y,big])=>{
+      const flip=!big&&y>0.5?" flip":""; const b=big?" big":"";
+      return `<span class="pip${b}${flip}" style="left:${x*100}%;top:${y*100}%">${sym}</span>`;
+    }).join("")+`</div>`;
+  }
+  const corner=p=>`<div class="idx ${p}"><span class="r">${LABEL[card.rank]}</span><span class="s">${sym}</span></div>`;
+  d.innerHTML=corner("tl")+center+corner("br");
   return d;
 }
-function backEl(sm){ const d=document.createElement("div"); d.className="card back"+(sm?" sm":""); return d; }
+function backEl(sm){
+  const d=document.createElement("div");
+  d.className="card back"+(sm?" sm":"");
+  d.innerHTML=`<div class="emblem">♣</div>`;
+  return d;
+}
 function cardStr(c){ return LABEL[c.rank]+SUITS[c.suit].sym; }
 
 function badge(el,pi){
