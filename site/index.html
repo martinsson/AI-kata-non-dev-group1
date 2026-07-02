@@ -1,3 +1,571 @@
 <!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Jeu de Belote</title>
-<h1>Jeu de Belote</h1>
+<style>
+  :root{
+    --felt:#0b6b3a; --felt2:#0a5730; --gold:#e8c56b; --ink:#12241a;
+    --nous:#f4d35e; --eux:#8ecae6; --legal:#ffe08a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;
+    color:#f4f4f4;
+    background:radial-gradient(circle at 50% 40%,var(--felt) 0%,var(--felt2) 70%,#063d20 100%);
+    min-height:100%;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  h1{margin:.4rem 0 .1rem;font-size:1.4rem;letter-spacing:.5px}
+  .sub{opacity:.75;font-size:.8rem;margin-bottom:.4rem}
+  #scores{display:flex;gap:1rem;align-items:center;font-weight:600;margin-bottom:.3rem}
+  #scores .nous{color:var(--nous)} #scores .eux{color:var(--eux)}
+  #table{
+    position:relative;width:min(96vw,720px);height:min(72vh,560px);
+    margin:.2rem auto;
+  }
+  .seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:4px}
+  .seat.north{top:0;left:50%;transform:translateX(-50%)}
+  .seat.south{bottom:0;left:50%;transform:translateX(-50%)}
+  .seat.west{left:0;top:50%;transform:translateY(-50%)}
+  .seat.east{right:0;top:50%;transform:translateY(-50%)}
+  .badge{
+    background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.2);
+    padding:3px 9px;border-radius:999px;font-size:.78rem;white-space:nowrap
+  }
+  .badge.turn{outline:2px solid var(--gold);box-shadow:0 0 12px var(--gold);background:rgba(0,0,0,.55)}
+  .badge .team-nous{color:var(--nous)} .badge .team-eux{color:var(--eux)}
+  .hand{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;max-width:min(94vw,700px)}
+  .hand.vert{flex-direction:column;gap:3px}
+  .card{
+    width:44px;height:62px;border-radius:6px;background:#fff;color:#111;
+    display:flex;flex-direction:column;justify-content:space-between;
+    padding:3px 4px;font-weight:700;box-shadow:0 2px 4px rgba(0,0,0,.4);
+    user-select:none;flex:0 0 auto;
+  }
+  .card.sm{width:30px;height:42px;font-size:.62rem;padding:2px 3px}
+  .card .r{font-size:.85rem;line-height:1}
+  .card .s{font-size:1rem;text-align:right;line-height:1}
+  .card.red{color:#c0392b}
+  .card.back{
+    background:repeating-linear-gradient(45deg,#7b1f2b,#7b1f2b 5px,#5c141d 5px,#5c141d 10px);
+    border:2px solid #e8c56b;
+  }
+  .card.playable{cursor:pointer;outline:2px solid var(--legal);box-shadow:0 0 10px var(--legal);transform:translateY(-4px)}
+  .card.playable:hover{transform:translateY(-9px)}
+  .card.dim{opacity:.45}
+  #center{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:210px;height:210px;display:grid;
+    grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr 1fr;
+    place-items:center;
+  }
+  #trickN{grid-column:2;grid-row:1}
+  #trickS{grid-column:2;grid-row:3}
+  #trickW{grid-column:1;grid-row:2}
+  #trickE{grid-column:3;grid-row:2}
+  #info{grid-column:2;grid-row:2;text-align:center;font-size:.72rem;opacity:.9}
+  #trumpBadge{font-size:1.4rem}
+  #msg{min-height:1.4rem;margin:.3rem;text-align:center;font-size:.9rem;font-weight:600}
+  #panel{display:flex;gap:.4rem;flex-wrap:wrap;justify-content:center;margin-bottom:1rem;min-height:2.4rem}
+  button{
+    font:inherit;font-weight:600;padding:.5rem .9rem;border-radius:8px;border:1px solid #0004;
+    background:var(--gold);color:#1a1206;cursor:pointer;
+  }
+  button.ghost{background:rgba(255,255,255,.12);color:#fff;border-color:#fff4}
+  button:hover{filter:brightness(1.08)}
+  .turned{margin-top:2px}
+  .pill{display:inline-block;background:rgba(0,0,0,.35);border-radius:6px;padding:1px 6px;margin:1px}
+  .win{color:var(--gold)}
+  a{color:var(--gold)}
+</style>
+</head>
+<body>
+  <h1>♠ ♥ Jeu de Belote ♦ ♣</h1>
+  <div class="sub">Vous (Sud) &amp; Nord contre Ouest &amp; Est — Belote classique</div>
+  <div id="scores">
+    <span class="nous">Nous : <b id="scNous">0</b></span>
+    <span>·</span>
+    <span class="eux">Eux : <b id="scEux">0</b></span>
+    <span>·</span>
+    <span style="opacity:.7">Objectif 501</span>
+  </div>
+
+  <div id="table">
+    <div class="seat north"><div class="badge" id="bN"></div><div class="hand" id="hN"></div></div>
+    <div class="seat west"><div class="badge" id="bW"></div><div class="hand vert" id="hW"></div></div>
+    <div class="seat east"><div class="badge" id="bE"></div><div class="hand vert" id="hE"></div></div>
+    <div class="seat south"><div class="hand" id="hS"></div><div class="badge" id="bS"></div></div>
+    <div id="center">
+      <div id="trickN"></div><div id="trickW"></div>
+      <div id="info"><div id="trumpBadge">—</div><div id="infoTxt">Atout</div></div>
+      <div id="trickE"></div><div id="trickS"></div>
+    </div>
+  </div>
+
+  <div id="msg">Bienvenue ! Cliquez sur « Nouvelle donne » pour commencer.</div>
+  <div id="panel"></div>
+
+<script>
+"use strict";
+/* ---------- Données de base ---------- */
+const SUITS = {
+  S:{sym:"♠",name:"Pique",red:false},
+  H:{sym:"♥",name:"Cœur",red:true},
+  D:{sym:"♦",name:"Carreau",red:true},
+  C:{sym:"♣",name:"Trèfle",red:false},
+};
+const SUIT_KEYS = ["S","H","D","C"];
+const RANKS = ["7","8","9","10","J","Q","K","A"];
+const LABEL = {7:"7",8:"8",9:"9",10:"10",J:"V",Q:"D",K:"R",A:"A"};
+
+// Ordre de force (plus grand = plus fort)
+const TRUMP_STR  = {J:8,9:7,A:6,10:5,K:4,Q:3,8:2,7:1};
+const NORMAL_STR = {A:8,10:7,K:6,Q:5,J:4,9:3,8:2,7:1};
+// Points
+const TRUMP_PTS  = {J:20,9:14,A:11,10:10,K:4,Q:3,8:0,7:0};
+const NORMAL_PTS = {A:11,10:10,K:4,Q:3,J:2,9:0,8:0,7:0};
+
+const NAMES = ["Vous (Sud)","Ouest","Nord","Est"];
+const SHORT = ["Sud","Ouest","Nord","Est"];
+const teamOf = p => (p % 2 === 0) ? 0 : 1;      // 0 = Nous (Sud+Nord), 1 = Eux (Ouest+Est)
+const TEAM_NAME = ["Nous","Eux"];
+
+/* ---------- État ---------- */
+let S = null;
+function freshState(dealer){
+  return {
+    dealer,
+    hands:[[],[],[],[]],
+    deck:[],
+    turnedCard:null,
+    trump:null, taker:null,
+    phase:"idle",            // idle|bid1|bid2|play|roundEnd|gameEnd
+    bidRound:1, passes:0,
+    turn:0, trickLeader:0,
+    trick:[],                // {player,card}
+    won:[[],[]],             // cartes gagnées par équipe
+    tricks:[0,0],            // nb de plis par équipe
+    lastTrickTeam:null,
+    beloteTeam:null,
+    beloteAnnounced:false,
+    scores: S ? S.scores : {0:0,1:0},
+    busy:false,
+  };
+}
+
+/* ---------- Utilitaires cartes ---------- */
+function buildDeck(){
+  const d=[];
+  for(const s of SUIT_KEYS) for(const r of RANKS) d.push({suit:s,rank:r});
+  return d;
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+const isTrump = c => c.suit===S.trump;
+function pts(c){ return isTrump(c)?TRUMP_PTS[c.rank]:NORMAL_PTS[c.rank]; }
+function power(c, lead){
+  if(c.suit===S.trump) return 200+TRUMP_STR[c.rank];
+  if(c.suit===lead)    return 100+NORMAL_STR[c.rank];
+  return NORMAL_STR[c.rank];
+}
+function trickWinnerIndex(trick){
+  const lead=trick[0].card.suit;
+  let bi=0,bp=-1;
+  trick.forEach((t,i)=>{const p=power(t.card,lead); if(p>bp){bp=p;bi=i;}});
+  return bi;
+}
+function sortHand(h){
+  const order=c=>SUIT_KEYS.indexOf(c.suit)*8 + RANKS.indexOf(c.rank);
+  h.sort((a,b)=>order(a)-order(b));
+}
+
+/* ---------- Coups légaux ---------- */
+function legalMoves(hand, playerIndex){
+  const trick=S.trick;
+  if(trick.length===0) return hand.slice();
+  const lead=trick[0].card.suit;
+  const winIdx=trickWinnerIndex(trick);
+  const winnerPlayer=trick[winIdx].player;
+  const partnerWinning = winnerPlayer===(playerIndex+2)%4;
+  const handLead=hand.filter(c=>c.suit===lead);
+  const handTrump=hand.filter(c=>c.suit===S.trump);
+  const trumpsInTrick=trick.filter(t=>t.card.suit===S.trump);
+  const topTrumpStr = trumpsInTrick.length
+      ? Math.max(...trumpsInTrick.map(t=>TRUMP_STR[t.card.rank])) : -1;
+
+  if(lead===S.trump){
+    if(handTrump.length){
+      const higher=handTrump.filter(c=>TRUMP_STR[c.rank]>topTrumpStr);
+      return higher.length?higher:handTrump;
+    }
+    return hand.slice();
+  }
+  // entame non-atout
+  if(handLead.length) return handLead;             // fournir
+  if(partnerWinning)  return hand.slice();          // partenaire maître : défausse libre
+  if(handTrump.length){                             // obligation de couper
+    if(trumpsInTrick.length){
+      const higher=handTrump.filter(c=>TRUMP_STR[c.rank]>topTrumpStr);
+      return higher.length?higher:handTrump;        // surcouper si possible
+    }
+    return handTrump;
+  }
+  return hand.slice();                              // ni couleur ni atout : libre
+}
+
+/* ---------- IA : évaluation d'une couleur comme atout ---------- */
+function evalSuit(hand, suit){
+  let s=0;
+  const tv={J:30,9:20,A:11,10:10,K:8,Q:6,8:3,7:2};
+  for(const c of hand){
+    if(c.suit===suit) s+=tv[c.rank];
+    else if(c.rank==="A") s+=6;
+    else if(c.rank==="10") s+=2;
+  }
+  return s;
+}
+
+/* ---------- IA : choix de carte ---------- */
+function botChoose(pi){
+  const hand=S.hands[pi];
+  const legal=legalMoves(hand,pi);
+  if(legal.length===1) return legal[0];
+  const minBy=(arr,f)=>arr.reduce((a,b)=>f(b)<f(a)?b:a);
+  const maxBy=(arr,f)=>arr.reduce((a,b)=>f(b)>f(a)?b:a);
+
+  if(S.trick.length===0){
+    // entame : sortir un As non-atout, sinon petite carte
+    const aces=legal.filter(c=>c.suit!==S.trump && c.rank==="A");
+    if(aces.length) return aces[0];
+    // si beaucoup d'atouts (>=4), tirer atout maître
+    const trumps=legal.filter(c=>c.suit===S.trump);
+    if(trumps.length>=4) return maxBy(trumps,c=>TRUMP_STR[c.rank]);
+    return minBy(legal,c=>pts(c)*10+NORMAL_STR[c.rank]);
+  }
+  const lead=S.trick[0].card.suit;
+  const winIdx=trickWinnerIndex(S.trick);
+  const winner=S.trick[winIdx];
+  const partnerWinning = winner.player===(pi+2)%4;
+  const isLast = S.trick.length===3;
+  const curPow=power(winner.card,lead);
+  const winning=legal.filter(c=>power(c,lead)>curPow);
+
+  if(partnerWinning){
+    const keep=legal.filter(c=>power(c,lead)<=curPow);
+    const pool=keep.length?keep:legal;
+    if(isLast) return maxBy(pool,c=>pts(c));         // charger le pli du partenaire
+    return minBy(pool,c=>pts(c)*10+NORMAL_STR[c.rank]);
+  }
+  if(winning.length){
+    if(isLast) return minBy(winning,c=>power(c,lead)); // gagner au moins cher
+    return minBy(winning,c=>power(c,lead));
+  }
+  return minBy(legal,c=>pts(c)*10+NORMAL_STR[c.rank]); // défausse
+}
+
+/* ---------- Déroulement ---------- */
+function newRound(){
+  const nextDealer = (S && typeof S.dealer==="number") ? (S.dealer+1)%4 : 0;
+  S=freshState(nextDealer);
+  const deck=shuffle(buildDeck());
+  for(let k=0;k<5;k++) for(let p=0;p<4;p++) S.hands[p].push(deck.pop());
+  S.turnedCard=deck.pop();
+  S.deck=deck;
+  S.hands.forEach(sortHand);
+  S.phase="bid1"; S.bidRound=1; S.passes=0;
+  S.turn=(S.dealer+1)%4;
+  render();
+  setMsg("Enchères — atout proposé : "+cardStr(S.turnedCard));
+  proceedBidding();
+}
+
+function proceedBidding(){
+  render();
+  if(S.turn===0){ showBidPanel(); return; }
+  clearPanel();
+  setTimeout(()=>{ botBid(S.turn); }, 700);
+}
+
+function botBid(pi){
+  if(S.phase!=="bid1" && S.phase!=="bid2") return;
+  if(S.bidRound===1){
+    const suit=S.turnedCard.suit;
+    const score=evalSuit(S.hands[pi].concat(S.turnedCard),suit);
+    if(score>=30){ takeTrump(pi,suit); return; }
+    passBid(pi);
+  } else {
+    let best=null,bestScore=-1;
+    for(const suit of SUIT_KEYS){
+      if(suit===S.turnedCard.suit) continue;
+      const sc=evalSuit(S.hands[pi].concat(S.turnedCard),suit);
+      if(sc>bestScore){bestScore=sc;best=suit;}
+    }
+    if(bestScore>=27){ takeTrump(pi,best); return; }
+    passBid(pi);
+  }
+}
+
+function passBid(pi){
+  S.passes++;
+  setMsg(SHORT[pi]+" passe.");
+  if(S.passes>=4){
+    if(S.bidRound===1){
+      S.bidRound=2; S.passes=0; S.phase="bid2";
+      S.turn=(S.dealer+1)%4;
+      setMsg("2ᵉ tour d'enchères — choisissez une autre couleur d'atout.");
+      setTimeout(proceedBidding,600);
+    } else {
+      setMsg("Tout le monde passe — nouvelle donne.");
+      setTimeout(newRound,1100);
+    }
+    return;
+  }
+  S.turn=(S.turn+1)%4;
+  proceedBidding();
+}
+
+function takeTrump(pi,suit){
+  S.taker=pi; S.trump=suit; S.phase="deal";
+  // distribution du reste : preneur prend la retournée, +2 ; les autres +3
+  S.hands[pi].push(S.turnedCard);
+  const give=[3,3,3,3]; give[pi]=2;
+  let p=(S.dealer+1)%4;
+  for(let n=0;n<4;n++){
+    for(let k=0;k<give[p];k++) S.hands[p].push(S.deck.pop());
+    p=(p+1)%4;
+  }
+  S.hands.forEach(sortHand);
+  // Belote-Rebelote : R+D d'atout dans une même main
+  for(let q=0;q<4;q++){
+    const h=S.hands[q];
+    if(h.some(c=>c.suit===suit&&c.rank==="K") && h.some(c=>c.suit===suit&&c.rank==="Q")){
+      S.beloteTeam=teamOf(q);
+    }
+  }
+  S.phase="play";
+  S.trickLeader=(S.dealer+1)%4;
+  S.turn=S.trickLeader;
+  clearPanel();
+  setMsg(SHORT[pi]+" prend à "+SUITS[suit].sym+" "+SUITS[suit].name+" ! À "+SHORT[S.turn]+" d'entamer.");
+  render();
+  setTimeout(nextPlay,900);
+}
+
+function nextPlay(){
+  if(S.phase!=="play" || S.turn<0) return;
+  render();
+  if(S.turn===0){ highlightHuman(); return; }
+  const pi=S.turn;
+  setTimeout(()=>{
+    if(S.phase!=="play" || S.turn!==pi) return;   // tour périmé : on ignore
+    playCard(pi, botChoose(pi));
+  }, 750);
+}
+
+function playCard(pi,card){
+  if(S.phase!=="play" || pi!==S.turn) return;   // hors-tour / double-clic ignorés
+  const hand=S.hands[pi];
+  const idx=hand.indexOf(card);
+  if(idx<0) return;
+  hand.splice(idx,1);
+  S.trick.push({player:pi,card});
+  // annonce belote-rebelote
+  if(S.trump && card.suit===S.trump && (card.rank==="K"||card.rank==="Q") && teamOf(pi)===S.beloteTeam){
+    const h=[...hand,card];
+    // (annonce simple lorsqu'on pose R ou D d'atout)
+    setMsg((pi===0?"Vous annoncez":SHORT[pi]+" annonce")+" « Belote » !");
+  }
+  if(S.trick.length===4){ S.turn=-1; render(); setTimeout(resolveTrick,850); return; }
+  S.turn=(pi+1)%4;
+  render();
+  nextPlay();
+}
+
+function resolveTrick(){
+  const wi=trickWinnerIndex(S.trick);
+  const winner=S.trick[wi].player;
+  const t=teamOf(winner);
+  for(const x of S.trick) S.won[t].push(x.card);
+  S.tricks[t]++;
+  S.lastTrickTeam=t;
+  setMsg(SHORT[winner]+" remporte le pli.");
+  S.trick=[];
+  S.trickLeader=winner; S.turn=winner;
+  render();
+  if(S.hands.every(h=>h.length===0)){ setTimeout(endRound,700); return; }
+  setTimeout(nextPlay,650);
+}
+
+function endRound(){
+  S.phase="roundEnd";
+  // points cartes par équipe
+  const raw=[0,0];
+  for(const t of [0,1]) for(const c of S.won[t]) raw[t]+=pts(c);
+  raw[S.lastTrickTeam]+=10; // dix de der
+  const take=teamOf(S.taker);
+  const def=1-take;
+  let round=[0,0];
+  let detail="";
+
+  const capot = (S.tricks[0]===8)?0:(S.tricks[1]===8?1:null);
+  if(capot!==null){
+    round[capot]=252; round[1-capot]=0;
+    detail=`Capot ! ${TEAM_NAME[capot]} rafle les 8 plis : 252 points.`;
+  } else {
+    const success = raw[take] >= 82;
+    if(success){
+      round[take]=raw[take]; round[def]=raw[def];
+      detail=`${TEAM_NAME[take]} (preneur) réussit : ${raw[take]} contre ${raw[def]}.`;
+    } else {
+      round[take]=0; round[def]=162;
+      detail=`Dedans ! ${TEAM_NAME[take]} chute (${raw[take]}<82) → ${TEAM_NAME[def]} marque 162.`;
+    }
+  }
+  if(S.beloteTeam!==null){
+    round[S.beloteTeam]+=20;
+    detail+=` Belote-Rebelote (+20 pour ${TEAM_NAME[S.beloteTeam]}).`;
+  }
+  S.scores[0]+=round[0]; S.scores[1]+=round[1];
+  render();
+  setMsg(detail);
+
+  if(S.scores[0]>=501 || S.scores[1]>=501){
+    S.phase="gameEnd";
+    const win = S.scores[0]>=S.scores[1] ? 0 : 1;
+    // si les deux dépassent, le plus haut gagne
+    const winner = (S.scores[0]>=501 && S.scores[1]>=501)
+        ? (S.scores[0]>=S.scores[1]?0:1)
+        : (S.scores[0]>=501?0:1);
+    setMsg(`🏆 Partie terminée — ${TEAM_NAME[winner]} gagne ${S.scores[0]} à ${S.scores[1]} !`);
+    panelButtons([{t:"Nouvelle partie",f:()=>{S.scores={0:0,1:0};newRound();}}]);
+    return;
+  }
+  panelButtons([
+    {t:"Donne suivante",f:newRound},
+    {t:"Détail des plis",f:showRecap,ghost:true},
+  ]);
+}
+
+/* ---------- Interaction humaine ---------- */
+function showBidPanel(){
+  if(S.bidRound===1){
+    const s=S.turnedCard.suit;
+    panelButtons([
+      {t:`Prendre  ${SUITS[s].sym} ${SUITS[s].name}`, f:()=>takeTrump(0,s)},
+      {t:"Passer", f:()=>passBid(0), ghost:true},
+    ]);
+    setMsg("À vous : prenez-vous "+cardStr(S.turnedCard)+" comme atout ?");
+  } else {
+    const btns=SUIT_KEYS.filter(s=>s!==S.turnedCard.suit).map(s=>(
+      {t:`${SUITS[s].sym} ${SUITS[s].name}`, f:()=>takeTrump(0,s)}
+    ));
+    btns.push({t:"Passer", f:()=>passBid(0), ghost:true});
+    panelButtons(btns);
+    setMsg("À vous : choisissez une couleur d'atout (autre que "+SUITS[S.turnedCard.suit].name+") ou passez.");
+  }
+}
+function highlightHuman(){
+  clearPanel();
+  setMsg("À vous de jouer — cliquez une carte surlignée.");
+  render();
+}
+
+/* ---------- Rendu ---------- */
+function cardEl(card, cls=""){
+  const d=document.createElement("div");
+  d.className="card "+cls+(SUITS[card.suit].red?" red":"");
+  d.innerHTML=`<div class="r">${LABEL[card.rank]}</div><div class="s">${SUITS[card.suit].sym}</div>`;
+  return d;
+}
+function backEl(sm){ const d=document.createElement("div"); d.className="card back"+(sm?" sm":""); return d; }
+function cardStr(c){ return LABEL[c.rank]+SUITS[c.suit].sym; }
+
+function badge(el,pi){
+  const tcls = teamOf(pi)===0?"team-nous":"team-eux";
+  let txt=`<span class="${tcls}">${NAMES[pi]}</span>`;
+  if(pi===2) txt+=" 🤝";
+  if(S.taker===pi) txt+=" · preneur";
+  el.innerHTML=txt;
+  el.classList.toggle("turn", (S.phase==="play"||S.phase==="bid1"||S.phase==="bid2") && S.turn===pi);
+}
+
+function render(){
+  document.getElementById("scNous").textContent=S.scores[0];
+  document.getElementById("scEux").textContent=S.scores[1];
+
+  badge(document.getElementById("bS"),0);
+  badge(document.getElementById("bW"),1);
+  badge(document.getElementById("bN"),2);
+  badge(document.getElementById("bE"),3);
+
+  // main humaine
+  const hS=document.getElementById("hS"); hS.innerHTML="";
+  const myTurn = S.phase==="play" && S.turn===0 && S.trick.length<4;
+  const legal = myTurn ? legalMoves(S.hands[0],0) : [];
+  for(const c of S.hands[0]){
+    const playable = legal.includes(c);
+    const el=cardEl(c, myTurn?(playable?"playable":"dim"):"");
+    if(playable) el.onclick=()=>{ if(S.turn===0&&S.phase==="play") playCard(0,c); };
+    hS.appendChild(el);
+  }
+  // dos des adversaires / partenaire
+  renderBacks("hN",S.hands[2].length,false);
+  renderBacks("hW",S.hands[1].length,true);
+  renderBacks("hE",S.hands[3].length,true);
+
+  // pli en cours
+  const slots={0:"trickS",1:"trickW",2:"trickN",3:"trickE"};
+  for(const k of Object.values(slots)) document.getElementById(k).innerHTML="";
+  for(const t of S.trick){
+    const el=cardEl(t.card,"sm");
+    document.getElementById(slots[t.player]).appendChild(el);
+  }
+  // retournée pendant les enchères
+  if((S.phase==="bid1"||S.phase==="bid2") && S.turnedCard){
+    const c=document.getElementById("trickN");
+    const wrap=document.createElement("div");
+    wrap.className="turned";
+    wrap.appendChild(cardEl(S.turnedCard, S.bidRound===2?"sm dim":"sm"));
+    c.appendChild(wrap);
+  }
+  // atout
+  const tb=document.getElementById("trumpBadge"), it=document.getElementById("infoTxt");
+  if(S.trump){ tb.textContent=SUITS[S.trump].sym; tb.className=SUITS[S.trump].red?"red":""; tb.style.color=SUITS[S.trump].red?"#ff8a80":"#fff"; it.textContent="Atout"; }
+  else { tb.textContent="—"; it.textContent="Atout ?"; }
+}
+function renderBacks(id,n,vert){
+  const el=document.getElementById(id); el.innerHTML="";
+  for(let i=0;i<n;i++) el.appendChild(backEl(true));
+}
+
+/* ---------- Panneau / messages ---------- */
+function setMsg(t){ document.getElementById("msg").textContent=t; }
+function clearPanel(){ document.getElementById("panel").innerHTML=""; }
+function panelButtons(list){
+  const p=document.getElementById("panel"); p.innerHTML="";
+  for(const b of list){
+    const btn=document.createElement("button");
+    btn.textContent=b.t; if(b.ghost) btn.className="ghost";
+    btn.onclick=b.f; p.appendChild(btn);
+  }
+}
+function showRecap(){
+  const raw=[0,0];
+  for(const t of [0,1]) for(const c of S.won[t]) raw[t]+=pts(c);
+  setMsg(`Plis — Nous : ${S.tricks[0]} plis / ${raw[0]} pts · Eux : ${S.tricks[1]} plis / ${raw[1]} pts (+10 der pour ${TEAM_NAME[S.lastTrickTeam]}).`);
+}
+
+/* ---------- Démarrage ---------- */
+S={scores:{0:0,1:0}};
+panelButtons([{t:"Nouvelle donne",f:newRound}]);
+</script>
+</body>
+</html>
