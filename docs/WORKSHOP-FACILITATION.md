@@ -1,5 +1,12 @@
 # Workshop facilitation
 
+> **⚠️ MOVED (2026-07-15):** the facilitation home is now the dedicated repo
+> **<https://github.com/martinsson/business-people-coding-workshop>** —
+> scripts, docs, slides, and GitHub Actions for publish/reset live there
+> (Pages: <https://www.changit.fr/business-people-coding-workshop/>).
+> This branch is kept as a frozen archive until the new repo has run one
+> full publish/reset cycle, then it will be deleted.
+
 Facilitator notes for running the "petite appli avec une IA, sans coder" kata
 across the five group repositories. Not needed by participants.
 
