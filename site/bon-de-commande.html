@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Demande de bon de commande</title>
+<style>
+  :root { --bleu:#1b3a6b; --bleu2:#274d88; --gris:#f4f6f9; --bord:#d4dae3; --rouge:#a20000; }
+  * { box-sizing: border-box; }
+  body { font-family: system-ui, "Segoe UI", Arial, sans-serif; margin:0; background:var(--gris); color:#1c2430; }
+  header { background:var(--bleu); color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:1.25rem; }
+  header p { margin:4px 0 0; opacity:.85; font-size:.85rem; }
+  main { max-width:1000px; margin:24px auto; padding:0 16px 60px; }
+  form { background:#fff; border:1px solid var(--bord); border-radius:10px; padding:22px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  fieldset { border:1px solid var(--bord); border-radius:8px; margin:0 0 20px; padding:16px; }
+  legend { font-weight:600; color:var(--bleu); padding:0 8px; }
+  .grid { display:grid; gap:14px; grid-template-columns:repeat(2,1fr); }
+  .grid .full { grid-column:1 / -1; }
+  label { display:block; font-size:.82rem; font-weight:600; margin-bottom:4px; color:#3a4759; }
+  input, textarea { width:100%; padding:9px 10px; border:1px solid var(--bord); border-radius:6px; font:inherit; background:#fff; }
+  input:focus, textarea:focus { outline:none; border-color:var(--bleu2); box-shadow:0 0 0 3px rgba(39,77,136,.12); }
+  textarea { resize:vertical; min-height:64px; }
+  table { width:100%; border-collapse:collapse; margin-top:6px; }
+  th, td { border:1px solid var(--bord); padding:6px; }
+  th { background:var(--bleu); color:#fff; font-size:.75rem; font-weight:600; }
+  td input { border:none; padding:6px; border-radius:0; }
+  td input:focus { box-shadow:inset 0 0 0 2px rgba(39,77,136,.25); }
+  td.actions { width:38px; text-align:center; background:#fafbfd; }
+  .btn { cursor:pointer; border:none; border-radius:6px; padding:10px 18px; font:inherit; font-weight:600; }
+  .btn-primary { background:var(--bleu); color:#fff; }
+  .btn-primary:hover { background:var(--bleu2); }
+  .btn-ghost { background:#eef1f6; color:var(--bleu); }
+  .btn-ghost:hover { background:#e2e7f0; }
+  .btn-del { background:#fbe9e9; color:var(--rouge); width:28px; height:28px; padding:0; border-radius:50%; line-height:1; font-size:1.1rem; }
+  .bar { display:flex; gap:12px; align-items:center; margin-top:8px; flex-wrap:wrap; }
+  .note { font-size:.8rem; color:#6b7688; margin:10px 0 0; }
+  .rouge { color:var(--rouge); font-weight:600; }
+  #status { font-size:.85rem; }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} .scroll{overflow-x:auto;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Demande de bon de commande</h1>
+  <p>Saisissez les informations puis générez le document Word prêt à envoyer.</p>
+</header>
+
+<main>
+<form id="bcForm" autocomplete="off">
+
+  <fieldset>
+    <legend>Fournisseur &amp; livraison</legend>
+    <div class="grid">
+      <div>
+        <label for="fournisseur">Fournisseur</label>
+        <input id="fournisseur" name="fournisseur" list="dl-fournisseur" required>
+      </div>
+      <div>
+        <label for="fournisseur_num">N° fournisseur</label>
+        <input id="fournisseur_num" name="fournisseur_num" list="dl-fournisseur_num">
+      </div>
+      <div class="full">
+        <label for="adresse_livraison">Adresse de livraison</label>
+        <textarea id="adresse_livraison" name="adresse_livraison" list="dl-adresse_livraison"></textarea>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Demandeur</legend>
+    <div class="grid">
+      <div>
+        <label for="demandeur">Demandeur</label>
+        <input id="demandeur" name="demandeur" list="dl-demandeur">
+      </div>
+      <div>
+        <label for="contact">Contact</label>
+        <input id="contact" name="contact" list="dl-contact">
+      </div>
+      <div>
+        <label for="email">E-mail</label>
+        <input id="email" name="email" type="email" list="dl-email">
+      </div>
+      <div>
+        <label for="telephone">Téléphone</label>
+        <input id="telephone" name="telephone" list="dl-telephone">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Articles</legend>
+    <div class="scroll">
+    <table id="articles">
+      <thead>
+        <tr>
+          <th style="width:32%">Désignation</th>
+          <th>Date livraison</th>
+          <th>Quantité</th>
+          <th>Prix unitaire</th>
+          <th>Prix total</th>
+          <th>TVA</th>
+          <th>TTC</th>
+          <th class="actions"></th>
+        </tr>
+      </thead>
+      <tbody id="articlesBody"></tbody>
+    </table>
+    </div>
+    <div class="bar">
+      <button type="button" class="btn btn-ghost" id="addRow">+ Ajouter une ligne</button>
+      <span class="note">Prix total et TTC se calculent automatiquement (modifiables).</span>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Imputation budgétaire</legend>
+    <div class="grid">
+      <div><label for="domaine_fonctionnel">Domaine fonctionnel</label><input id="domaine_fonctionnel" name="domaine_fonctionnel" list="dl-domaine_fonctionnel"></div>
+      <div><label for="centre_cout">Centre de coût</label><input id="centre_cout" name="centre_cout" list="dl-centre_cout"></div>
+      <div><label for="centre_financier">Centre financier</label><input id="centre_financier" name="centre_financier" list="dl-centre_financier"></div>
+      <div><label for="fond">Fond</label><input id="fond" name="fond" list="dl-fond"></div>
+      <div><label for="eotp">eOTP</label><input id="eotp" name="eotp" list="dl-eotp"></div>
+    </div>
+  </fieldset>
+
+  <p class="note rouge">*ATTENTION : bien vérifier l'exactitude du devis, tout dossier incomplet sera renvoyé.</p>
+
+  <div class="bar">
+    <button type="submit" class="btn btn-primary">⬇ Générer le bon de commande (.docx)</button>
+    <button type="button" class="btn btn-ghost" id="resetBtn">Réinitialiser</button>
+    <span id="status"></span>
+  </div>
+</form>
+</main>
+
+<!-- datalists d'auto-complétion (remplies depuis l'historique local) -->
+<datalist id="dl-fournisseur"></datalist>
+<datalist id="dl-fournisseur_num"></datalist>
+<datalist id="dl-adresse_livraison"></datalist>
+<datalist id="dl-demandeur"></datalist>
+<datalist id="dl-contact"></datalist>
+<datalist id="dl-email"></datalist>
+<datalist id="dl-telephone"></datalist>
+<datalist id="dl-domaine_fonctionnel"></datalist>
+<datalist id="dl-centre_cout"></datalist>
+<datalist id="dl-centre_financier"></datalist>
+<datalist id="dl-fond"></datalist>
+<datalist id="dl-eotp"></datalist>
+
+<script src="vendor/pizzip.min.js"></script>
+<script src="vendor/docxtemplater.min.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var TEMPLATE_URL = "modele-bon-de-commande.docx";
+  var HEADER_FIELDS = ["fournisseur","fournisseur_num","adresse_livraison","demandeur","contact","email","telephone","domaine_fonctionnel","centre_cout","centre_financier","fond","eotp"];
+  var ARTICLE_FIELDS = ["designation","date_livraison","quantite","prix_unitaire","prix_total","tva","ttc"];
+  var LS_LAST = "bc_last_entry";
+  var LS_HIST = "bc_history";       // { champ: [valeurs...] }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var body = $("articlesBody");
+  var statusEl = $("status");
+
+  /* ---------- Lignes d'articles ---------- */
+  function numFR(v) { return parseFloat(String(v || "").replace(/\s/g, "").replace(",", ".")); }
+  function money(n) { return isFinite(n) ? n.toFixed(2).replace(".", ",") : ""; }
+
+  function recompute(tr) {
+    var q = numFR(tr.querySelector('[data-f=quantite]').value);
+    var pu = numFR(tr.querySelector('[data-f=prix_unitaire]').value);
+    var tot = tr.querySelector('[data-f=prix_total]');
+    var tva = numFR(tr.querySelector('[data-f=tva]').value);
+    var ttc = tr.querySelector('[data-f=ttc]');
+    if (isFinite(q) && isFinite(pu)) {
+      var ht = q * pu;
+      if (!tot.dataset.touched) tot.value = money(ht);
+      var htVal = numFR(tot.value);
+      if (!ttc.dataset.touched && isFinite(htVal)) {
+        var taux = isFinite(tva) ? tva : 0;
+        ttc.value = money(htVal * (1 + taux / 100));
+      }
+    }
+  }
+
+  function addRow(data) {
+    data = data || {};
+    var tr = document.createElement("tr");
+    ARTICLE_FIELDS.forEach(function (f) {
+      var td = document.createElement("td");
+      var inp = document.createElement("input");
+      inp.setAttribute("data-f", f);
+      inp.value = data[f] || "";
+      if (f === "date_livraison") inp.type = "text";
+      if (f === "prix_total" || f === "ttc") {
+        inp.addEventListener("input", function () { inp.dataset.touched = "1"; });
+      }
+      inp.addEventListener("input", function () { recompute(tr); });
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+    var tdA = document.createElement("td");
+    tdA.className = "actions";
+    var del = document.createElement("button");
+    del.type = "button"; del.className = "btn btn-del"; del.textContent = "×"; del.title = "Supprimer la ligne";
+    del.addEventListener("click", function () {
+      tr.remove();
+      if (!body.children.length) addRow();
+    });
+    tdA.appendChild(del);
+    tr.appendChild(tdA);
+    body.appendChild(tr);
+    return tr;
+  }
+
+  function collectArticles() {
+    var rows = [];
+    Array.prototype.forEach.call(body.children, function (tr) {
+      var obj = {}, empty = true;
+      ARTICLE_FIELDS.forEach(function (f) {
+        var v = tr.querySelector('[data-f="' + f + '"]').value.trim();
+        obj[f] = v;
+        if (v) empty = false;
+      });
+      if (!empty) rows.push(obj);
+    });
+    return rows;
+  }
+
+  /* ---------- Persistance locale (préremplissage + auto-complétion) ---------- */
+  function loadJSON(key, def) {
+    try { return JSON.parse(localStorage.getItem(key)) || def; } catch (e) { return def; }
+  }
+
+  function refreshDatalists() {
+    var hist = loadJSON(LS_HIST, {});
+    HEADER_FIELDS.forEach(function (f) {
+      var dl = $("dl-" + f);
+      if (!dl) return;
+      dl.innerHTML = "";
+      (hist[f] || []).forEach(function (val) {
+        var o = document.createElement("option"); o.value = val; dl.appendChild(o);
+      });
+    });
+  }
+
+  function saveEntry(data) {
+    // dernière saisie -> préremplissage au prochain chargement
+    localStorage.setItem(LS_LAST, JSON.stringify(data));
+    // historique par champ -> auto-complétion
+    var hist = loadJSON(LS_HIST, {});
+    function push(f, v) {
+      if (!v) return;
+      hist[f] = hist[f] || [];
+      hist[f] = [v].concat(hist[f].filter(function (x) { return x !== v; })).slice(0, 20);
+    }
+    HEADER_FIELDS.forEach(function (f) { push(f, data[f]); });
+    (data.articles || []).forEach(function (a) {
+      push("designation", a.designation);
+    });
+    localStorage.setItem(LS_HIST, JSON.stringify(hist));
+    refreshDatalists();
+  }
+
+  function prefillLast() {
+    var last = loadJSON(LS_LAST, null);
+    if (!last) { addRow(); return; }
+    HEADER_FIELDS.forEach(function (f) { if ($(f) && last[f] != null) $(f).value = last[f]; });
+    if (last.articles && last.articles.length) last.articles.forEach(function (a) { addRow(a); });
+    else addRow();
+  }
+
+  /* ---------- Génération du .docx ---------- */
+  function gatherData() {
+    var data = {};
+    HEADER_FIELDS.forEach(function (f) { data[f] = $(f).value.trim(); });
+    data.articles = collectArticles();
+    return data;
+  }
+
+  function downloadBlob(blob, filename) {
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  function slug(s) { return (s || "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40); }
+
+  function setStatus(msg, err) {
+    statusEl.textContent = msg;
+    statusEl.style.color = err ? "#a20000" : "#1f7a3d";
+  }
+
+  function generate() {
+    var data = gatherData();
+    if (!data.fournisseur) { setStatus("Le fournisseur est obligatoire.", true); $("fournisseur").focus(); return; }
+    if (!data.articles.length) { setStatus("Ajoutez au moins un article.", true); return; }
+
+    setStatus("Génération en cours…", false);
+    fetch(TEMPLATE_URL)
+      .then(function (r) {
+        if (!r.ok) throw new Error("Modèle introuvable (" + r.status + ")");
+        return r.arrayBuffer();
+      })
+      .then(function (buf) {
+        var zip = new PizZip(buf);
+        var doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
+        doc.render(data);
+        var out = doc.getZip().generate({
+          type: "blob",
+          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        });
+        var name = "Bon_de_commande_" + (slug(data.fournisseur) || "sans_nom") + ".docx";
+        downloadBlob(out, name);
+        saveEntry(data);
+        setStatus("Document généré : " + name, false);
+      })
+      .catch(function (e) {
+        console.error(e);
+        setStatus("Erreur : " + e.message, true);
+      });
+  }
+
+  /* ---------- Init ---------- */
+  $("addRow").addEventListener("click", function () { addRow(); });
+  $("resetBtn").addEventListener("click", function () {
+    if (!confirm("Vider le formulaire ?")) return;
+    $("bcForm").reset();
+    body.innerHTML = "";
+    addRow();
+    setStatus("", false);
+  });
+  $("bcForm").addEventListener("submit", function (e) { e.preventDefault(); generate(); });
+
+  refreshDatalists();
+  prefillLast();
+})();
+</script>
+</body>
+</html>
