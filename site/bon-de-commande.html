@@ -11,6 +11,8 @@
   header { background:var(--bleu); color:#fff; padding:18px 24px; }
   header h1 { margin:0; font-size:1.25rem; }
   header p { margin:4px 0 0; opacity:.85; font-size:.85rem; }
+  nav a { color:#cfe0ff; text-decoration:none; font-size:.85rem; margin-right:16px; }
+  nav a:hover { text-decoration:underline; }
   main { max-width:1000px; margin:24px auto; padding:0 16px 60px; }
   form { background:#fff; border:1px solid var(--bord); border-radius:10px; padding:22px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
   fieldset { border:1px solid var(--bord); border-radius:8px; margin:0 0 20px; padding:16px; }
@@ -18,8 +20,9 @@
   .grid { display:grid; gap:14px; grid-template-columns:repeat(2,1fr); }
   .grid .full { grid-column:1 / -1; }
   label { display:block; font-size:.82rem; font-weight:600; margin-bottom:4px; color:#3a4759; }
-  input, textarea { width:100%; padding:9px 10px; border:1px solid var(--bord); border-radius:6px; font:inherit; background:#fff; }
-  input:focus, textarea:focus { outline:none; border-color:var(--bleu2); box-shadow:0 0 0 3px rgba(39,77,136,.12); }
+  input, textarea, select { width:100%; padding:9px 10px; border:1px solid var(--bord); border-radius:6px; font:inherit; background:#fff; }
+  input:focus, textarea:focus, select:focus { outline:none; border-color:var(--bleu2); box-shadow:0 0 0 3px rgba(39,77,136,.12); }
+  input[readonly] { background:#eef1f6; color:#55627a; }
   textarea { resize:vertical; min-height:64px; }
   table { width:100%; border-collapse:collapse; margin-top:6px; }
   th, td { border:1px solid var(--bord); padding:6px; }
@@ -37,6 +40,8 @@
   .note { font-size:.8rem; color:#6b7688; margin:10px 0 0; }
   .rouge { color:var(--rouge); font-weight:600; }
   #status { font-size:.85rem; }
+  #newSupplier { border:1px dashed var(--bleu2); background:#f7f9fc; border-radius:8px; padding:14px; margin-top:12px; }
+  #newSupplier.hidden { display:none; }
   @media (max-width:640px){ .grid{grid-template-columns:1fr;} .scroll{overflow-x:auto;} }
 </style>
 </head>
@@ -44,6 +49,7 @@
 <header>
   <h1>Demande de bon de commande</h1>
   <p>Saisissez les informations puis générez le document Word prêt à envoyer.</p>
+  <nav><a href="index.html">Accueil</a><a href="fournisseurs.html">Fournisseurs</a><a href="gestion.html">Gestion des demandes</a></nav>
 </header>
 
 <main>
@@ -53,16 +59,34 @@
     <legend>Fournisseur &amp; livraison</legend>
     <div class="grid">
       <div>
-        <label for="fournisseur">Fournisseur</label>
-        <input id="fournisseur" name="fournisseur" list="dl-fournisseur" required>
+        <label for="fournisseur_select">Fournisseur</label>
+        <select id="fournisseur_select">
+          <option value="">— Sélectionner un fournisseur —</option>
+          <option value="__new__">➕ Nouveau fournisseur…</option>
+        </select>
       </div>
       <div>
         <label for="fournisseur_num">N° fournisseur</label>
-        <input id="fournisseur_num" name="fournisseur_num" list="dl-fournisseur_num">
+        <input id="fournisseur_num" name="fournisseur_num" readonly placeholder="(automatique)">
       </div>
       <div class="full">
         <label for="adresse_livraison">Adresse de livraison</label>
-        <textarea id="adresse_livraison" name="adresse_livraison" list="dl-adresse_livraison"></textarea>
+        <textarea id="adresse_livraison" name="adresse_livraison"></textarea>
+      </div>
+    </div>
+
+    <!-- Création d'un fournisseur à la volée (numéro permanent) -->
+    <div id="newSupplier" class="hidden">
+      <div class="grid">
+        <div><label for="ns_nom">Nom du fournisseur</label><input id="ns_nom"></div>
+        <div><label for="ns_num">N° fournisseur (permanent)</label><input id="ns_num" placeholder="ex. F-10457"></div>
+        <div><label for="ns_email">E-mail</label><input id="ns_email" type="email"></div>
+        <div><label for="ns_telephone">Téléphone</label><input id="ns_telephone"></div>
+        <div class="full"><label for="ns_adresse">Adresse / coordonnées</label><textarea id="ns_adresse"></textarea></div>
+      </div>
+      <div class="bar">
+        <button type="button" class="btn btn-ghost" id="ns_save">Enregistrer ce fournisseur</button>
+        <span class="note">Le numéro est lié définitivement à ce fournisseur.</span>
       </div>
     </div>
   </fieldset>
@@ -70,22 +94,10 @@
   <fieldset>
     <legend>Demandeur</legend>
     <div class="grid">
-      <div>
-        <label for="demandeur">Demandeur</label>
-        <input id="demandeur" name="demandeur" list="dl-demandeur">
-      </div>
-      <div>
-        <label for="contact">Contact</label>
-        <input id="contact" name="contact" list="dl-contact">
-      </div>
-      <div>
-        <label for="email">E-mail</label>
-        <input id="email" name="email" type="email" list="dl-email">
-      </div>
-      <div>
-        <label for="telephone">Téléphone</label>
-        <input id="telephone" name="telephone" list="dl-telephone">
-      </div>
+      <div><label for="demandeur">Demandeur</label><input id="demandeur" name="demandeur" list="dl-demandeur"></div>
+      <div><label for="contact">Contact</label><input id="contact" name="contact" list="dl-contact"></div>
+      <div><label for="email">E-mail</label><input id="email" name="email" type="email" list="dl-email"></div>
+      <div><label for="telephone">Téléphone</label><input id="telephone" name="telephone" list="dl-telephone"></div>
     </div>
   </fieldset>
 
@@ -110,7 +122,7 @@
     </div>
     <div class="bar">
       <button type="button" class="btn btn-ghost" id="addRow">+ Ajouter une ligne</button>
-      <span class="note">Prix total et TTC se calculent automatiquement (modifiables).</span>
+      <span class="note">Date de livraison préremplie au jour ; prix total et TTC calculés automatiquement (modifiables).</span>
     </div>
   </fieldset>
 
@@ -118,8 +130,16 @@
     <legend>Imputation budgétaire</legend>
     <div class="grid">
       <div><label for="domaine_fonctionnel">Domaine fonctionnel</label><input id="domaine_fonctionnel" name="domaine_fonctionnel" list="dl-domaine_fonctionnel"></div>
-      <div><label for="centre_cout">Centre de coût</label><input id="centre_cout" name="centre_cout" list="dl-centre_cout"></div>
-      <div><label for="centre_financier">Centre financier</label><input id="centre_financier" name="centre_financier" list="dl-centre_financier"></div>
+      <div>
+        <label for="centre_cout">Centre de coût</label>
+        <input id="centre_cout" name="centre_cout" readonly>
+      </div>
+      <div>
+        <label for="centre_financier">Centre financier</label>
+        <select id="centre_financier" name="centre_financier" required>
+          <option value="">— Choisir —</option>
+        </select>
+      </div>
       <div><label for="fond">Fond</label><input id="fond" name="fond" list="dl-fond"></div>
       <div><label for="eotp">eOTP</label><input id="eotp" name="eotp" list="dl-eotp"></div>
     </div>
@@ -135,35 +155,93 @@
 </form>
 </main>
 
-<!-- datalists d'auto-complétion (remplies depuis l'historique local) -->
-<datalist id="dl-fournisseur"></datalist>
-<datalist id="dl-fournisseur_num"></datalist>
-<datalist id="dl-adresse_livraison"></datalist>
 <datalist id="dl-demandeur"></datalist>
 <datalist id="dl-contact"></datalist>
 <datalist id="dl-email"></datalist>
 <datalist id="dl-telephone"></datalist>
 <datalist id="dl-domaine_fonctionnel"></datalist>
-<datalist id="dl-centre_cout"></datalist>
-<datalist id="dl-centre_financier"></datalist>
 <datalist id="dl-fond"></datalist>
 <datalist id="dl-eotp"></datalist>
+<datalist id="dl-designation"></datalist>
 
 <script src="vendor/pizzip.min.js"></script>
 <script src="vendor/docxtemplater.min.js"></script>
+<script src="store.js"></script>
 <script>
 (function () {
   "use strict";
 
-  var TEMPLATE_URL = "modele-bon-de-commande.docx";
-  var HEADER_FIELDS = ["fournisseur","fournisseur_num","adresse_livraison","demandeur","contact","email","telephone","domaine_fonctionnel","centre_cout","centre_financier","fond","eotp"];
+  var HEADER_FIELDS = ["demandeur","contact","email","telephone","domaine_fonctionnel","fond","eotp"];
   var ARTICLE_FIELDS = ["designation","date_livraison","quantite","prix_unitaire","prix_total","tva","ttc"];
   var LS_LAST = "bc_last_entry";
-  var LS_HIST = "bc_history";       // { champ: [valeurs...] }
+  var LS_HIST = "bc_history";
 
   var $ = function (id) { return document.getElementById(id); };
   var body = $("articlesBody");
   var statusEl = $("status");
+  var selFour = $("fournisseur_select");
+  var newBox = $("newSupplier");
+
+  /* ---------- Fournisseurs (remarque 3) ---------- */
+  function fillSupplierSelect(selectId) {
+    var cur = selFour.value;
+    selFour.innerHTML = '<option value="">— Sélectionner un fournisseur —</option>';
+    BCStore.suppliers().sort(function (a, b) { return (a.nom || "").localeCompare(b.nom || ""); })
+      .forEach(function (s) {
+        var o = document.createElement("option");
+        o.value = s.id;
+        o.textContent = s.nom + (s.num ? "  (" + s.num + ")" : "");
+        selFour.appendChild(o);
+      });
+    var oNew = document.createElement("option");
+    oNew.value = "__new__"; oNew.textContent = "➕ Nouveau fournisseur…";
+    selFour.appendChild(oNew);
+    if (selectId) selFour.value = selectId;
+    else if (cur && cur !== "__new__") selFour.value = cur;
+  }
+
+  function applySupplier(id) {
+    var s = BCStore.supplierById(id);
+    if (!s) { $("fournisseur_num").value = ""; return; }
+    $("fournisseur_num").value = s.num || "";
+  }
+
+  selFour.addEventListener("change", function () {
+    if (selFour.value === "__new__") {
+      newBox.classList.remove("hidden");
+      $("fournisseur_num").value = "";
+    } else {
+      newBox.classList.add("hidden");
+      applySupplier(selFour.value);
+    }
+  });
+
+  $("ns_save").addEventListener("click", function () {
+    var nom = $("ns_nom").value.trim();
+    var num = $("ns_num").value.trim();
+    if (!nom) { alert("Indiquez le nom du fournisseur."); return; }
+    if (!num) { alert("Indiquez le numéro (permanent) du fournisseur."); return; }
+    if (BCStore.supplierByNum(num)) { alert("Ce numéro est déjà attribué à un autre fournisseur."); return; }
+    if (BCStore.supplierByName(nom)) { alert("Ce fournisseur existe déjà."); return; }
+    var s = BCStore.addSupplier({
+      nom: nom, num: num, adresse: $("ns_adresse").value,
+      email: $("ns_email").value, telephone: $("ns_telephone").value
+    });
+    ["ns_nom","ns_num","ns_email","ns_telephone","ns_adresse"].forEach(function (i) { $(i).value = ""; });
+    newBox.classList.add("hidden");
+    fillSupplierSelect(s.id);
+    applySupplier(s.id);
+    setStatus("Fournisseur « " + s.nom + " » enregistré (n° " + s.num + ").", false);
+  });
+
+  /* ---------- Centre financier (remarque 2) + Centre de coût (remarque 1) ---------- */
+  function initImputation() {
+    $("centre_cout").value = BCStore.CENTRE_COUT;    // valeur fixe 67012_OZER
+    var sel = $("centre_financier");
+    BCStore.CENTRES_FINANCIERS.forEach(function (v) {
+      var o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o);
+    });
+  }
 
   /* ---------- Lignes d'articles ---------- */
   function numFR(v) { return parseFloat(String(v || "").replace(/\s/g, "").replace(",", ".")); }
@@ -176,12 +254,10 @@
     var tva = numFR(tr.querySelector('[data-f=tva]').value);
     var ttc = tr.querySelector('[data-f=ttc]');
     if (isFinite(q) && isFinite(pu)) {
-      var ht = q * pu;
-      if (!tot.dataset.touched) tot.value = money(ht);
+      if (!tot.dataset.touched) tot.value = money(q * pu);
       var htVal = numFR(tot.value);
       if (!ttc.dataset.touched && isFinite(htVal)) {
-        var taux = isFinite(tva) ? tva : 0;
-        ttc.value = money(htVal * (1 + taux / 100));
+        ttc.value = money(htVal * (1 + (isFinite(tva) ? tva : 0) / 100));
       }
     }
   }
@@ -193,25 +269,19 @@
       var td = document.createElement("td");
       var inp = document.createElement("input");
       inp.setAttribute("data-f", f);
-      inp.value = data[f] || "";
-      if (f === "date_livraison") inp.type = "text";
-      if (f === "prix_total" || f === "ttc") {
-        inp.addEventListener("input", function () { inp.dataset.touched = "1"; });
-      }
+      if (f === "designation") inp.setAttribute("list", "dl-designation");
+      // remarque 5 : date de livraison préremplie au jour
+      inp.value = data[f] != null ? data[f] : (f === "date_livraison" ? BCStore.todayFR() : "");
+      if (f === "prix_total" || f === "ttc") inp.addEventListener("input", function () { inp.dataset.touched = "1"; });
       inp.addEventListener("input", function () { recompute(tr); });
-      td.appendChild(inp);
-      tr.appendChild(td);
+      td.appendChild(inp); tr.appendChild(td);
     });
     var tdA = document.createElement("td");
     tdA.className = "actions";
     var del = document.createElement("button");
     del.type = "button"; del.className = "btn btn-del"; del.textContent = "×"; del.title = "Supprimer la ligne";
-    del.addEventListener("click", function () {
-      tr.remove();
-      if (!body.children.length) addRow();
-    });
-    tdA.appendChild(del);
-    tr.appendChild(tdA);
+    del.addEventListener("click", function () { tr.remove(); if (!body.children.length) addRow(); });
+    tdA.appendChild(del); tr.appendChild(tdA);
     body.appendChild(tr);
     return tr;
   }
@@ -223,107 +293,80 @@
       ARTICLE_FIELDS.forEach(function (f) {
         var v = tr.querySelector('[data-f="' + f + '"]').value.trim();
         obj[f] = v;
-        if (v) empty = false;
+        if (v && f !== "date_livraison") empty = false;   // une date seule ne compte pas comme ligne
       });
       if (!empty) rows.push(obj);
     });
     return rows;
   }
 
-  /* ---------- Persistance locale (préremplissage + auto-complétion) ---------- */
-  function loadJSON(key, def) {
-    try { return JSON.parse(localStorage.getItem(key)) || def; } catch (e) { return def; }
-  }
+  /* ---------- Auto-complétion (champs libres) ---------- */
+  function loadJSON(key, def) { try { return JSON.parse(localStorage.getItem(key)) || def; } catch (e) { return def; } }
 
   function refreshDatalists() {
     var hist = loadJSON(LS_HIST, {});
-    HEADER_FIELDS.forEach(function (f) {
-      var dl = $("dl-" + f);
-      if (!dl) return;
+    HEADER_FIELDS.concat(["designation"]).forEach(function (f) {
+      var dl = $("dl-" + f); if (!dl) return;
       dl.innerHTML = "";
-      (hist[f] || []).forEach(function (val) {
-        var o = document.createElement("option"); o.value = val; dl.appendChild(o);
-      });
+      (hist[f] || []).forEach(function (val) { var o = document.createElement("option"); o.value = val; dl.appendChild(o); });
     });
   }
 
   function saveEntry(data) {
-    // dernière saisie -> préremplissage au prochain chargement
     localStorage.setItem(LS_LAST, JSON.stringify(data));
-    // historique par champ -> auto-complétion
     var hist = loadJSON(LS_HIST, {});
     function push(f, v) {
       if (!v) return;
-      hist[f] = hist[f] || [];
-      hist[f] = [v].concat(hist[f].filter(function (x) { return x !== v; })).slice(0, 20);
+      hist[f] = [v].concat((hist[f] || []).filter(function (x) { return x !== v; })).slice(0, 20);
     }
     HEADER_FIELDS.forEach(function (f) { push(f, data[f]); });
-    (data.articles || []).forEach(function (a) {
-      push("designation", a.designation);
-    });
+    (data.articles || []).forEach(function (a) { push("designation", a.designation); });
     localStorage.setItem(LS_HIST, JSON.stringify(hist));
     refreshDatalists();
   }
 
   function prefillLast() {
     var last = loadJSON(LS_LAST, null);
-    if (!last) { addRow(); return; }
-    HEADER_FIELDS.forEach(function (f) { if ($(f) && last[f] != null) $(f).value = last[f]; });
-    if (last.articles && last.articles.length) last.articles.forEach(function (a) { addRow(a); });
-    else addRow();
+    if (last) {
+      HEADER_FIELDS.forEach(function (f) { if ($(f) && last[f] != null) $(f).value = last[f]; });
+      $("adresse_livraison").value = last.adresse_livraison || "";
+      if (last.centre_financier) $("centre_financier").value = last.centre_financier;
+    }
+    addRow();   // ligne vierge, date du jour
   }
 
-  /* ---------- Génération du .docx ---------- */
+  /* ---------- Génération ---------- */
   function gatherData() {
     var data = {};
     HEADER_FIELDS.forEach(function (f) { data[f] = $(f).value.trim(); });
+    data.adresse_livraison = $("adresse_livraison").value.trim();
+    data.centre_cout = BCStore.CENTRE_COUT;
+    data.centre_financier = $("centre_financier").value;
+    // fournisseur depuis la table
+    var s = BCStore.supplierById(selFour.value);
+    data.fournisseur = s ? s.nom : "";
+    data.fournisseur_num = s ? s.num : $("fournisseur_num").value.trim();
+    data.fournisseur_id = s ? s.id : "";
     data.articles = collectArticles();
     return data;
   }
 
-  function downloadBlob(blob, filename) {
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement("a");
-    a.href = url; a.download = filename;
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
-  }
-
-  function slug(s) { return (s || "").replace(/[^a-zA-Z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40); }
-
-  function setStatus(msg, err) {
-    statusEl.textContent = msg;
-    statusEl.style.color = err ? "#a20000" : "#1f7a3d";
-  }
+  function setStatus(msg, err) { statusEl.textContent = msg; statusEl.style.color = err ? "#a20000" : "#1f7a3d"; }
 
   function generate() {
     var data = gatherData();
-    if (!data.fournisseur) { setStatus("Le fournisseur est obligatoire.", true); $("fournisseur").focus(); return; }
+    if (!data.fournisseur) { setStatus("Sélectionnez un fournisseur (ou créez-en un).", true); selFour.focus(); return; }
+    if (!data.centre_financier) { setStatus("Choisissez un centre financier.", true); $("centre_financier").focus(); return; }
     if (!data.articles.length) { setStatus("Ajoutez au moins un article.", true); return; }
 
     setStatus("Génération en cours…", false);
-    fetch(TEMPLATE_URL)
-      .then(function (r) {
-        if (!r.ok) throw new Error("Modèle introuvable (" + r.status + ")");
-        return r.arrayBuffer();
-      })
-      .then(function (buf) {
-        var zip = new PizZip(buf);
-        var doc = new window.docxtemplater(zip, { paragraphLoop: true, linebreaks: true });
-        doc.render(data);
-        var out = doc.getZip().generate({
-          type: "blob",
-          mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-        });
-        var name = "Bon_de_commande_" + (slug(data.fournisseur) || "sans_nom") + ".docx";
-        downloadBlob(out, name);
+    BCStore.generateDocx(data)
+      .then(function () {
         saveEntry(data);
-        setStatus("Document généré : " + name, false);
+        BCStore.addRequest(data);          // archivage (remarque 4)
+        setStatus("Document généré et archivé dans la gestion des demandes.", false);
       })
-      .catch(function (e) {
-        console.error(e);
-        setStatus("Erreur : " + e.message, true);
-      });
+      .catch(function (e) { console.error(e); setStatus("Erreur : " + e.message, true); });
   }
 
   /* ---------- Init ---------- */
@@ -331,12 +374,16 @@
   $("resetBtn").addEventListener("click", function () {
     if (!confirm("Vider le formulaire ?")) return;
     $("bcForm").reset();
-    body.innerHTML = "";
-    addRow();
+    body.innerHTML = ""; addRow();
+    $("centre_cout").value = BCStore.CENTRE_COUT;
+    newBox.classList.add("hidden");
     setStatus("", false);
   });
   $("bcForm").addEventListener("submit", function (e) { e.preventDefault(); generate(); });
 
+  window.setStatus = setStatus;
+  initImputation();
+  fillSupplierSelect();
   refreshDatalists();
   prefillLast();
 })();

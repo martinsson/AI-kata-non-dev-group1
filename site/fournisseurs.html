@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Fournisseurs</title>
+<style>
+  :root { --bleu:#1b3a6b; --bleu2:#274d88; --gris:#f4f6f9; --bord:#d4dae3; --rouge:#a20000; }
+  * { box-sizing:border-box; }
+  body { font-family:system-ui,"Segoe UI",Arial,sans-serif; margin:0; background:var(--gris); color:#1c2430; }
+  header { background:var(--bleu); color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:1.25rem; }
+  nav a { color:#cfe0ff; text-decoration:none; font-size:.85rem; margin-right:16px; }
+  nav a:hover { text-decoration:underline; }
+  main { max-width:1080px; margin:24px auto; padding:0 16px 60px; }
+  .card { background:#fff; border:1px solid var(--bord); border-radius:10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,.05); margin-bottom:22px; }
+  h2 { color:var(--bleu); font-size:1rem; margin:0 0 14px; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(2,1fr); }
+  .grid .full { grid-column:1 / -1; }
+  label { display:block; font-size:.8rem; font-weight:600; margin-bottom:4px; color:#3a4759; }
+  input, textarea { width:100%; padding:9px 10px; border:1px solid var(--bord); border-radius:6px; font:inherit; }
+  input:focus, textarea:focus { outline:none; border-color:var(--bleu2); box-shadow:0 0 0 3px rgba(39,77,136,.12); }
+  input[readonly] { background:#eef1f6; color:#55627a; }
+  textarea { resize:vertical; min-height:54px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { border:1px solid var(--bord); padding:8px 10px; text-align:left; font-size:.88rem; vertical-align:top; }
+  th { background:var(--bleu); color:#fff; font-size:.78rem; }
+  tbody tr:nth-child(even) { background:#fafbfd; }
+  .btn { cursor:pointer; border:none; border-radius:6px; padding:9px 16px; font:inherit; font-weight:600; }
+  .btn-primary { background:var(--bleu); color:#fff; }
+  .btn-primary:hover { background:var(--bleu2); }
+  .btn-ghost { background:#eef1f6; color:var(--bleu); }
+  .btn-sm { padding:5px 10px; font-size:.8rem; }
+  .btn-danger { background:#fbe9e9; color:var(--rouge); }
+  .bar { display:flex; gap:10px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .note { font-size:.8rem; color:#6b7688; }
+  .search { max-width:320px; margin-bottom:12px; }
+  .empty { color:#6b7688; font-style:italic; padding:14px 0; }
+  @media (max-width:640px){ .grid{grid-template-columns:1fr;} .scroll{overflow-x:auto;} }
+</style>
+</head>
+<body>
+<header>
+  <h1>Table des fournisseurs</h1>
+  <nav><a href="index.html">Accueil</a><a href="bon-de-commande.html">Nouvelle demande</a><a href="gestion.html">Gestion des demandes</a></nav>
+</header>
+
+<main>
+  <div class="card">
+    <h2 id="formTitle">Ajouter un fournisseur</h2>
+    <input type="hidden" id="editId">
+    <div class="grid">
+      <div><label for="nom">Nom du fournisseur</label><input id="nom"></div>
+      <div><label for="num">N° fournisseur (permanent)</label><input id="num" placeholder="ex. F-10457"></div>
+      <div><label for="email">E-mail</label><input id="email" type="email"></div>
+      <div><label for="telephone">Téléphone</label><input id="telephone"></div>
+      <div class="full"><label for="adresse">Adresse / coordonnées</label><textarea id="adresse"></textarea></div>
+    </div>
+    <div class="bar">
+      <button class="btn btn-primary" id="saveBtn">Enregistrer</button>
+      <button class="btn btn-ghost" id="cancelBtn" style="display:none">Annuler</button>
+      <span class="note" id="numNote">Le numéro est lié définitivement au fournisseur (non modifiable après création).</span>
+      <span id="msg" class="note"></span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Fournisseurs enregistrés (<span id="count">0</span>)</h2>
+    <input class="search" id="search" placeholder="Rechercher (nom, n°, e-mail…)">
+    <div class="scroll">
+    <table>
+      <thead><tr><th>N°</th><th>Nom</th><th>Adresse</th><th>E-mail</th><th>Téléphone</th><th style="width:120px">Actions</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    </div>
+    <p class="empty" id="emptyMsg" style="display:none">Aucun fournisseur pour l'instant.</p>
+  </div>
+</main>
+
+<script src="store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var msg = $("msg");
+
+  function setMsg(t, err) { msg.textContent = t; msg.style.color = err ? "#a20000" : "#1f7a3d"; }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" })[c]; }); }
+
+  function editMode(on, s) {
+    $("formTitle").textContent = on ? "Modifier le fournisseur" : "Ajouter un fournisseur";
+    $("cancelBtn").style.display = on ? "" : "none";
+    $("num").readOnly = on;                      // numéro permanent : verrouillé en édition
+    $("numNote").textContent = on
+      ? "Le numéro est permanent et ne peut pas être modifié."
+      : "Le numéro est lié définitivement au fournisseur (non modifiable après création).";
+    $("editId").value = on ? s.id : "";
+    $("nom").value = on ? s.nom : "";
+    $("num").value = on ? s.num : "";
+    $("email").value = on ? s.email : "";
+    $("telephone").value = on ? s.telephone : "";
+    $("adresse").value = on ? s.adresse : "";
+  }
+
+  function clearForm() { editMode(false, null); ["nom","num","email","telephone","adresse"].forEach(function (i) { $(i).value = ""; }); }
+
+  function save() {
+    var nom = $("nom").value.trim(), num = $("num").value.trim(), id = $("editId").value;
+    if (!nom) { setMsg("Le nom est obligatoire.", true); return; }
+    var patch = { nom: nom, email: $("email").value, telephone: $("telephone").value, adresse: $("adresse").value };
+    if (id) {
+      BCStore.updateSupplier(id, patch);
+      setMsg("Fournisseur mis à jour.", false);
+    } else {
+      if (!num) { setMsg("Le numéro est obligatoire.", true); return; }
+      if (BCStore.supplierByNum(num)) { setMsg("Ce numéro est déjà attribué.", true); return; }
+      if (BCStore.supplierByName(nom)) { setMsg("Ce fournisseur existe déjà.", true); return; }
+      patch.num = num;
+      BCStore.addSupplier(patch);
+      setMsg("Fournisseur ajouté (n° " + num + ").", false);
+    }
+    clearForm(); render();
+  }
+
+  function render() {
+    var q = ($("search").value || "").trim().toLowerCase();
+    var list = BCStore.suppliers().sort(function (a, b) { return (a.nom || "").localeCompare(b.nom || ""); });
+    $("count").textContent = list.length;
+    if (q) list = list.filter(function (s) {
+      return [s.nom, s.num, s.email, s.telephone, s.adresse].join(" ").toLowerCase().indexOf(q) >= 0;
+    });
+    var tb = $("rows"); tb.innerHTML = "";
+    list.forEach(function (s) {
+      var tr = document.createElement("tr");
+      tr.innerHTML =
+        "<td><strong>" + esc(s.num) + "</strong></td>" +
+        "<td>" + esc(s.nom) + "</td>" +
+        "<td>" + esc(s.adresse).replace(/\n/g, "<br>") + "</td>" +
+        "<td>" + esc(s.email) + "</td>" +
+        "<td>" + esc(s.telephone) + "</td>" +
+        "<td></td>";
+      var td = tr.lastChild;
+      var e = document.createElement("button"); e.className = "btn btn-ghost btn-sm"; e.textContent = "Modifier";
+      e.onclick = function () { editMode(true, s); window.scrollTo({ top: 0, behavior: "smooth" }); };
+      var d = document.createElement("button"); d.className = "btn btn-danger btn-sm"; d.textContent = "Suppr."; d.style.marginLeft = "6px";
+      d.onclick = function () { if (confirm("Supprimer « " + s.nom + " » ?")) { BCStore.deleteSupplier(s.id); render(); } };
+      td.appendChild(e); td.appendChild(d);
+      tb.appendChild(tr);
+    });
+    $("emptyMsg").style.display = BCStore.suppliers().length ? "none" : "";
+  }
+
+  $("saveBtn").onclick = save;
+  $("cancelBtn").onclick = function () { clearForm(); setMsg("", false); };
+  $("search").addEventListener("input", render);
+  render();
+})();
+</script>
+</body>
+</html>

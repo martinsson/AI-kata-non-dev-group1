@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gestion des demandes</title>
+<style>
+  :root { --bleu:#1b3a6b; --bleu2:#274d88; --gris:#f4f6f9; --bord:#d4dae3; --rouge:#a20000; }
+  * { box-sizing:border-box; }
+  body { font-family:system-ui,"Segoe UI",Arial,sans-serif; margin:0; background:var(--gris); color:#1c2430; }
+  header { background:var(--bleu); color:#fff; padding:18px 24px; }
+  header h1 { margin:0; font-size:1.25rem; }
+  nav a { color:#cfe0ff; text-decoration:none; font-size:.85rem; margin-right:16px; }
+  nav a:hover { text-decoration:underline; }
+  main { max-width:1280px; margin:24px auto; padding:0 16px 60px; }
+  .card { background:#fff; border:1px solid var(--bord); border-radius:10px; padding:18px; box-shadow:0 1px 3px rgba(0,0,0,.05); }
+  .bar { display:flex; gap:12px; align-items:center; margin-bottom:12px; flex-wrap:wrap; }
+  .bar h2 { color:var(--bleu); font-size:1rem; margin:0; }
+  .spacer { flex:1; }
+  .btn { cursor:pointer; border:none; border-radius:6px; padding:8px 14px; font:inherit; font-weight:600; }
+  .btn-ghost { background:#eef1f6; color:var(--bleu); }
+  .btn-sm { padding:4px 9px; font-size:.8rem; }
+  .btn-danger { background:#fbe9e9; color:var(--rouge); }
+  .btn-dl { background:var(--bleu); color:#fff; }
+  .scroll { overflow-x:auto; }
+  table { width:100%; border-collapse:collapse; font-size:.86rem; }
+  th, td { border:1px solid var(--bord); padding:7px 9px; text-align:left; white-space:nowrap; }
+  th { background:var(--bleu); color:#fff; font-size:.76rem; position:sticky; top:0; }
+  thead tr.filters th { background:#eaeef5; padding:4px; }
+  thead tr.filters input, thead tr.filters select { width:100%; padding:5px 6px; border:1px solid var(--bord); border-radius:4px; font:inherit; font-size:.8rem; }
+  tbody tr:nth-child(even) { background:#fafbfd; }
+  tbody tr:hover { background:#eef4ff; }
+  td.num { text-align:right; font-variant-numeric:tabular-nums; }
+  .empty { color:#6b7688; font-style:italic; padding:16px 0; }
+  .count { font-size:.82rem; color:#6b7688; }
+  #status { font-size:.85rem; }
+  .modal { position:fixed; inset:0; background:rgba(12,20,35,.5); display:none; align-items:center; justify-content:center; padding:20px; }
+  .modal.open { display:flex; }
+  .modal .box { background:#fff; border-radius:10px; max-width:720px; width:100%; max-height:85vh; overflow:auto; padding:22px; }
+  .modal h3 { color:var(--bleu); margin:0 0 12px; }
+  .kv { display:grid; grid-template-columns:180px 1fr; gap:6px 12px; font-size:.88rem; }
+  .kv div:nth-child(odd) { color:#55627a; font-weight:600; }
+  .art { width:100%; border-collapse:collapse; margin-top:12px; font-size:.82rem; }
+  .art th, .art td { border:1px solid var(--bord); padding:5px 7px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Gestion des demandes de bon de commande</h1>
+  <nav><a href="index.html">Accueil</a><a href="bon-de-commande.html">Nouvelle demande</a><a href="fournisseurs.html">Fournisseurs</a></nav>
+</header>
+
+<main>
+  <div class="card">
+    <div class="bar">
+      <h2>Historique</h2>
+      <span class="count" id="count"></span>
+      <div class="spacer"></div>
+      <button class="btn btn-ghost btn-sm" id="clearFilters">Effacer les filtres</button>
+      <button class="btn btn-ghost btn-sm" id="exportCsv">Exporter CSV</button>
+      <span id="status"></span>
+    </div>
+    <div class="scroll">
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th data-c="created">Date</th>
+          <th data-c="fournisseur">Fournisseur</th>
+          <th data-c="fournisseur_num">N°</th>
+          <th data-c="demandeur">Demandeur</th>
+          <th data-c="centre_financier">Centre financier</th>
+          <th data-c="eotp">eOTP</th>
+          <th data-c="domaine_fonctionnel">Domaine fonct.</th>
+          <th data-c="fond">Fond</th>
+          <th data-c="ttc">Montant TTC</th>
+          <th>Actions</th>
+        </tr>
+        <tr class="filters">
+          <th><input data-f="created" placeholder="filtrer…"></th>
+          <th><input data-f="fournisseur" placeholder="filtrer…"></th>
+          <th><input data-f="fournisseur_num" placeholder="filtrer…"></th>
+          <th><input data-f="demandeur" placeholder="filtrer…"></th>
+          <th><select data-f="centre_financier"><option value="">(tous)</option></select></th>
+          <th><input data-f="eotp" placeholder="filtrer…"></th>
+          <th><input data-f="domaine_fonctionnel" placeholder="filtrer…"></th>
+          <th><input data-f="fond" placeholder="filtrer…"></th>
+          <th></th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="rows"></tbody>
+    </table>
+    </div>
+    <p class="empty" id="emptyMsg" style="display:none">Aucune demande archivée pour l'instant. Les demandes générées depuis le formulaire apparaîtront ici.</p>
+  </div>
+</main>
+
+<div class="modal" id="modal"><div class="box" id="modalBox"></div></div>
+
+<script src="vendor/pizzip.min.js"></script>
+<script src="vendor/docxtemplater.min.js"></script>
+<script src="store.js"></script>
+<script>
+(function () {
+  "use strict";
+  var $ = function (id) { return document.getElementById(id); };
+  var status = $("status");
+  var filters = {};
+
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;" })[c]; }); }
+  function fmtDate(iso) { try { var d = new Date(iso); var p = function (n){return String(n).padStart(2,"0");}; return p(d.getDate())+"/"+p(d.getMonth()+1)+"/"+d.getFullYear()+" "+p(d.getHours())+":"+p(d.getMinutes()); } catch (e) { return iso || ""; } }
+  function money(n) { return (isFinite(n)?n:0).toFixed(2).replace(".", ",") + " €"; }
+  function setStatus(t, err) { status.textContent = t; status.style.color = err ? "#a20000" : "#1f7a3d"; }
+
+  // valeur affichée par colonne pour un enregistrement
+  function cell(r, c) {
+    if (c === "created") return fmtDate(r.created);
+    if (c === "ttc") return money(BCStore.ttcTotal(r));
+    return r[c] || "";
+  }
+
+  function initCFFilter() {
+    var sel = document.querySelector('select[data-f=centre_financier]');
+    BCStore.CENTRES_FINANCIERS.forEach(function (v) { var o = document.createElement("option"); o.value = v; o.textContent = v; sel.appendChild(o); });
+  }
+
+  function bindFilters() {
+    document.querySelectorAll("[data-f]").forEach(function (el) {
+      el.addEventListener("input", function () { filters[el.getAttribute("data-f")] = el.value.trim().toLowerCase(); render(); });
+    });
+    $("clearFilters").onclick = function () {
+      filters = {};
+      document.querySelectorAll("[data-f]").forEach(function (el) { el.value = ""; });
+      render();
+    };
+  }
+
+  function match(r) {
+    return Object.keys(filters).every(function (f) {
+      var q = filters[f]; if (!q) return true;
+      return String(cell(r, f)).toLowerCase().indexOf(q) >= 0;
+    });
+  }
+
+  function render() {
+    var all = BCStore.requests();
+    var list = all.filter(match);
+    $("count").textContent = list.length + " / " + all.length + " demande(s)";
+    var tb = $("rows"); tb.innerHTML = "";
+    list.forEach(function (r) {
+      var tr = document.createElement("tr");
+      ["created","fournisseur","fournisseur_num","demandeur","centre_financier","eotp","domaine_fonctionnel","fond"].forEach(function (c) {
+        var td = document.createElement("td"); td.textContent = cell(r, c); tr.appendChild(td);
+      });
+      var tdM = document.createElement("td"); tdM.className = "num"; tdM.textContent = money(BCStore.ttcTotal(r)); tr.appendChild(tdM);
+      var tdA = document.createElement("td");
+      var v = document.createElement("button"); v.className = "btn btn-ghost btn-sm"; v.textContent = "Détails"; v.onclick = function () { openDetails(r); };
+      var d = document.createElement("button"); d.className = "btn btn-dl btn-sm"; d.textContent = "⬇"; d.title = "Re-télécharger le .docx"; d.style.marginLeft = "5px";
+      d.onclick = function () { setStatus("Génération…", false); BCStore.generateDocx(r).then(function () { setStatus("Document régénéré.", false); }).catch(function (e) { setStatus("Erreur : " + e.message, true); }); };
+      var x = document.createElement("button"); x.className = "btn btn-danger btn-sm"; x.textContent = "Suppr."; x.style.marginLeft = "5px";
+      x.onclick = function () { if (confirm("Supprimer cette demande de l'historique ?")) { BCStore.deleteRequest(r.id); render(); } };
+      tdA.appendChild(v); tdA.appendChild(d); tdA.appendChild(x); tr.appendChild(tdA);
+      tb.appendChild(tr);
+    });
+    $("emptyMsg").style.display = all.length ? "none" : "";
+  }
+
+  function openDetails(r) {
+    var arts = (r.articles || []).map(function (a) {
+      return "<tr><td>" + esc(a.designation) + "</td><td>" + esc(a.date_livraison) + "</td><td>" + esc(a.quantite) +
+        "</td><td>" + esc(a.prix_unitaire) + "</td><td>" + esc(a.prix_total) + "</td><td>" + esc(a.tva) + "</td><td>" + esc(a.ttc) + "</td></tr>";
+    }).join("");
+    $("modalBox").innerHTML =
+      "<h3>Demande du " + esc(fmtDate(r.created)) + "</h3>" +
+      '<div class="kv">' +
+        "<div>Fournisseur</div><div>" + esc(r.fournisseur) + " (n° " + esc(r.fournisseur_num) + ")</div>" +
+        "<div>Adresse de livraison</div><div>" + esc(r.adresse_livraison).replace(/\n/g, "<br>") + "</div>" +
+        "<div>Demandeur</div><div>" + esc(r.demandeur) + "</div>" +
+        "<div>Contact</div><div>" + esc(r.contact) + "</div>" +
+        "<div>E-mail</div><div>" + esc(r.email) + "</div>" +
+        "<div>Téléphone</div><div>" + esc(r.telephone) + "</div>" +
+        "<div>Domaine fonctionnel</div><div>" + esc(r.domaine_fonctionnel) + "</div>" +
+        "<div>Centre de coût</div><div>" + esc(r.centre_cout) + "</div>" +
+        "<div>Centre financier</div><div>" + esc(r.centre_financier) + "</div>" +
+        "<div>Fond</div><div>" + esc(r.fond) + "</div>" +
+        "<div>eOTP</div><div>" + esc(r.eotp) + "</div>" +
+      "</div>" +
+      '<table class="art"><thead><tr><th>Désignation</th><th>Date liv.</th><th>Qté</th><th>PU</th><th>Total</th><th>TVA</th><th>TTC</th></tr></thead><tbody>' + arts + "</tbody></table>" +
+      '<div class="bar" style="margin-top:16px"><button class="btn btn-dl" id="mDl">⬇ Re-télécharger</button><button class="btn btn-ghost" id="mClose">Fermer</button></div>';
+    $("modal").classList.add("open");
+    $("mClose").onclick = closeModal;
+    $("mDl").onclick = function () { BCStore.generateDocx(r); };
+  }
+  function closeModal() { $("modal").classList.remove("open"); }
+  $("modal").addEventListener("click", function (e) { if (e.target === $("modal")) closeModal(); });
+
+  function exportCsv() {
+    var cols = ["created","fournisseur","fournisseur_num","demandeur","centre_financier","eotp","domaine_fonctionnel","fond"];
+    var head = ["Date","Fournisseur","N°","Demandeur","Centre financier","eOTP","Domaine fonctionnel","Fond","Montant TTC"];
+    var list = BCStore.requests().filter(match);
+    var lines = [head.join(";")];
+    list.forEach(function (r) {
+      var row = cols.map(function (c) { return '"' + String(cell(r, c)).replace(/"/g, '""') + '"'; });
+      row.push('"' + money(BCStore.ttcTotal(r)) + '"');
+      lines.push(row.join(";"));
+    });
+    var blob = new Blob(["﻿" + lines.join("\r\n")], { type: "text/csv;charset=utf-8" });
+    var url = URL.createObjectURL(blob); var a = document.createElement("a");
+    a.href = url; a.download = "demandes_bon_de_commande.csv"; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+  }
+
+  initCFFilter();
+  bindFilters();
+  $("exportCsv").onclick = exportCsv;
+  render();
+})();
+</script>
+</body>
+</html>
