@@ -173,6 +173,7 @@
     $("modalBox").innerHTML =
       "<h3>Demande du " + esc(fmtDate(r.created)) + "</h3>" +
       '<div class="kv">' +
+        "<div>Date du document</div><div>" + esc(r.date_document) + "</div>" +
         "<div>Fournisseur</div><div>" + esc(r.fournisseur) + " (n° " + esc(r.fournisseur_num) + ")</div>" +
         "<div>Adresse de livraison</div><div>" + esc(r.adresse_livraison).replace(/\n/g, "<br>") + "</div>" +
         "<div>Demandeur</div><div>" + esc(r.demandeur) + "</div>" +

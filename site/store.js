@@ -23,6 +23,13 @@
     return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear();
   }
 
+  // Date longue en français, ex. "17 juillet 2026" (format d'origine du document).
+  var MOIS_FR = ["janvier","février","mars","avril","mai","juin","juillet","août","septembre","octobre","novembre","décembre"];
+  function todayLongFR() {
+    var d = new Date();
+    return d.getDate() + " " + MOIS_FR[d.getMonth()] + " " + d.getFullYear();
+  }
+
   /* ---------------- Fournisseurs ---------------- */
   function suppliers() { return load(K_SUP); }
   function saveSuppliers(a) { save(K_SUP, a); }
@@ -117,6 +124,7 @@
     CENTRE_COUT: CENTRE_COUT,
     CENTRES_FINANCIERS: CENTRES_FINANCIERS,
     todayFR: todayFR,
+    todayLongFR: todayLongFR,
     // fournisseurs
     suppliers: suppliers, supplierById: supplierById, supplierByNum: supplierByNum,
     supplierByName: supplierByName, addSupplier: addSupplier, updateSupplier: updateSupplier,

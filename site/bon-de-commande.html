@@ -58,6 +58,10 @@
   <fieldset>
     <legend>Fournisseur &amp; livraison</legend>
     <div class="grid">
+      <div class="full">
+        <label for="date_document">Date du document (en-tête)</label>
+        <input id="date_document" name="date_document" placeholder="ex. 17 juillet 2026">
+      </div>
       <div>
         <label for="fournisseur_select">Fournisseur</label>
         <select id="fournisseur_select">
@@ -332,6 +336,7 @@
       $("adresse_livraison").value = last.adresse_livraison || "";
       if (last.centre_financier) $("centre_financier").value = last.centre_financier;
     }
+    $("date_document").value = BCStore.todayLongFR();   // toujours la date du jour au chargement
     addRow();   // ligne vierge, date du jour
   }
 
@@ -339,6 +344,7 @@
   function gatherData() {
     var data = {};
     HEADER_FIELDS.forEach(function (f) { data[f] = $(f).value.trim(); });
+    data.date_document = $("date_document").value.trim();
     data.adresse_livraison = $("adresse_livraison").value.trim();
     data.centre_cout = BCStore.CENTRE_COUT;
     data.centre_financier = $("centre_financier").value;
@@ -375,6 +381,7 @@
     if (!confirm("Vider le formulaire ?")) return;
     $("bcForm").reset();
     body.innerHTML = ""; addRow();
+    $("date_document").value = BCStore.todayLongFR();
     $("centre_cout").value = BCStore.CENTRE_COUT;
     newBox.classList.add("hidden");
     setStatus("", false);
