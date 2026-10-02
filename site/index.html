@@ -26,10 +26,11 @@
 </main>
 <footer>1001E Cell Compare · Outil de comparaison documentaire. Aucune performance ni supériorité commerciale n’est affirmée sans données comparables.</footer>
 <script>
-const key='cell-compare-v2', fields=['name','technology','energy','density','temperature','pressure','life','cost','source','conditions','group'], numeric=['energy','density','temperature','pressure','life','cost'];
+const key='cell-compare-v1', fields=['name','technology','energy','density','temperature','pressure','life','cost','source','conditions','group'], numeric=['energy','density','temperature','pressure','life','cost'];
 const defaults=[{id:'reference',name:'1001 Électrodes · modèle à préciser',source:'https://1001electrodes.com/',conditions:'Site fourni par l’utilisateur ; fiche et performances non vérifiées.'},{id:'nel',name:'Nel · modèle à préciser'},{id:'itm',name:'ITM Power · modèle à préciser'},{id:'sunfire',name:'Sunfire · modèle à préciser'}].map(row=>({...row,technology:'',source:row.source||'',conditions:row.conditions||'',group:''}));
 let data=structuredClone(defaults);
 try{const saved=JSON.parse(localStorage.getItem(key));if(Array.isArray(saved)&&saved.length===defaults.length&&saved.every((r,i)=>r.id===defaults[i].id&&fields.every(f=>r[f]===undefined||r[f]===null||typeof r[f]==='string'||typeof r[f]==='number')))data=saved;}catch{}
+data=data.map(row=>row.id==='reference'?{...row,name:row.name==='1001E · modèle à préciser'?'1001 Électrodes · modèle à préciser':row.name,source:row.source||defaults[0].source,conditions:row.conditions||defaults[0].conditions}:row);
 const $=id=>document.getElementById(id), missing='Non renseigné';
 function eligible(row,field){return Number.isFinite(row[field])&&row.source&&row.conditions&&row.group;}
 function render(){
