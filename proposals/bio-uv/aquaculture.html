@@ -151,6 +151,23 @@ footer a{color:var(--muted);text-decoration:none}
   .gallery{grid-template-columns:1fr 1fr}.gallery figure.big{grid-column:span 2;grid-row:auto}
 }
 @media (max-width:560px){.gallery{grid-template-columns:1fr}.gallery figure.big{grid-column:auto}}
+.grid>*{min-width:0}
+.todo{background:#fff3c4;color:#5a4500;border-radius:4px;padding:0 5px;font-weight:600}
+.proof{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.proof div{border-top:3px solid var(--accent);padding-top:14px}
+.proof b{display:block;font-size:22px;color:var(--ink);margin-bottom:4px}
+.proof span{color:var(--muted);font-size:14px}
+.yes{color:#1f9d6b;font-weight:700}.no{color:var(--muted)}
+th.us,td.us{background:rgba(0,104,168,.08)}
+.case{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:28px}
+.case h3{font-size:16px;margin:0 0 6px;color:var(--brand)}
+form.sizing{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:28px;margin-top:24px}
+form.sizing label{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600}
+form.sizing input,form.sizing select,form.sizing textarea{font:inherit;font-weight:400;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+form.sizing .full{grid-column:1/-1}
+form.sizing button{border:0;cursor:pointer;font:inherit}
+@media (max-width:900px){.proof,.case{grid-template-columns:1fr 1fr}form.sizing{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.proof,.case,form.sizing{grid-template-columns:1fr}}
 .crumbs{font-size:13px;opacity:.8;margin-bottom:14px}
 .crumbs a{color:#fff}
 .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
@@ -237,6 +254,20 @@ th{background:var(--bg-alt)}
     <div class="stat"><b>Écloserie → wellboat</b><span>du naissain au transport du poisson vivant</span></div>
   </div>
 
+  <section id="preuves" aria-labelledby="h-pr" style="padding-bottom:0">
+    <div class="wrap">
+      <span class="tag">Preuves</span>
+      <h2 id="h-pr">Des résultats vérifiables</h2>
+      <p class="lead">Les acheteurs en aquaculture comparent d'abord les preuves : validations officielles, parc installé, débits traités.</p>
+      <div class="proof">
+        <div><b>Depuis 2000</b><span>BIO-UV équipe des élevages aquacoles</span></div>
+        <div><b><span class="todo">[nombre]</span> systèmes</b><span>installés en aquaculture dans le monde</span></div>
+        <div><b><span class="todo">[m³/h]</span></b><span>d'eau aquacole désinfectée en continu</span></div>
+        <div><b>Validation <span class="todo">[NVI ?]</span></b><span>par l'institut vétérinaire norvégien ou d'autres autorités, à confirmer</span></div>
+      </div>
+    </div>
+  </section>
+
   <section id="enjeux" aria-labelledby="h-enj">
     <div class="wrap grid g2" style="gap:48px;align-items:center">
       <div>
@@ -250,11 +281,21 @@ th{background:var(--bg-alt)}
           <li>Limiter l'entretien et la consommation d'énergie</li>
         </ul>
       </div>
-      <div class="card">
+      <div>
         <span class="tag">Pathogènes ciblés</span>
-        <h3>Les UV et l'ozone inactivent :</h3>
-        <p>les bactéries (vibrioses, furonculose…), les virus, les parasites, les champignons et les algues présents dans l'eau d'appoint, l'eau recirculée ou l'eau rejetée.</p>
-        <p style="margin:0"><em>À compléter par BIO-UV avec les doses de référence par pathogène.</em></p>
+        <h3 style="margin:8px 0 12px">Les pathogènes que recherchent les aquaculteurs</h3>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th>Pathogène</th><th>Type</th><th>Dose UV de référence</th></tr></thead>
+            <tbody>
+              <tr><td>Nécrose pancréatique infectieuse (IPN)</td><td>Virus</td><td><span class="todo">[mJ/cm²]</span></td></tr>
+              <tr><td>Tenacibaculum</td><td>Bactérie</td><td><span class="todo">[mJ/cm²]</span></td></tr>
+              <tr><td>Vibrio (vibrioses)</td><td>Bactérie</td><td><span class="todo">[mJ/cm²]</span></td></tr>
+              <tr><td>Aeromonas salmonicida (furonculose)</td><td>Bactérie</td><td><span class="todo">[mJ/cm²]</span></td></tr>
+              <tr><td>Saprolegnia</td><td>Champignon</td><td><span class="todo">[mJ/cm²]</span></td></tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </section>
@@ -357,7 +398,27 @@ th{background:var(--bg-alt)}
     </div>
   </section>
 
-  <section id="produits" aria-labelledby="h-prod">
+  <section id="pourquoi" aria-labelledby="h-why">
+    <div class="wrap">
+      <span class="tag">Pourquoi BIO-UV</span>
+      <h2 id="h-why">Les UV et l'ozone chez un seul fournisseur</h2>
+      <p class="lead">La plupart des fournisseurs ne maîtrisent qu'une des deux technologies. BIO-UV dimensionne la chaîne complète, avec un seul interlocuteur.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>Spécialiste UV seul</th><th>Spécialiste ozone seul</th><th class="us">BIO-UV Group</th></tr></thead>
+          <tbody>
+            <tr><td>Désinfection UV</td><td class="yes">✓</td><td class="no">–</td><td class="us yes">✓</td></tr>
+            <tr><td>Ozone et AOP</td><td class="no">–</td><td class="yes">✓</td><td class="us yes">✓ (Triogen)</td></tr>
+            <tr><td>Ozone puis UV dimensionnés ensemble</td><td class="no">Deux fournisseurs</td><td class="no">Deux fournisseurs</td><td class="us yes">✓ Un seul interlocuteur</td></tr>
+            <tr><td>Eau douce et eau de mer</td><td>Selon le fournisseur</td><td>Selon le fournisseur</td><td class="us yes">✓</td></tr>
+            <tr><td>Écloserie, RAS, wellboat, rejets</td><td>Selon le fournisseur</td><td>Selon le fournisseur</td><td class="us yes">✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="produits" class="alt" aria-labelledby="h-prod">
     <div class="wrap">
       <span class="tag">Gammes</span>
       <h2 id="h-prod">Nos équipements pour l'aquaculture</h2>
@@ -402,7 +463,17 @@ th{background:var(--bg-alt)}
     <div class="wrap">
       <span class="tag">Références et partenaires</span>
       <h2 id="h-ref">Ils nous font confiance en aquaculture</h2>
-      <p class="lead">Chaque projet pourra avoir son étude de cas détaillée : contexte, installation, résultats chiffrés.</p>
+      <p class="lead">Chaque projet a son étude de cas détaillée, avec une page dédiée.</p>
+      <article class="card" style="margin-bottom:28px">
+        <span class="tag">Étude de cas · Wellboat · 2026</span>
+        <h3 style="font-size:22px">Désinfection de l'eau d'un wellboat pour un producteur mondial de saumon</h3>
+        <div class="case">
+          <div><h3>Contexte</h3><p>Transport de poissons vivants entre sites : il faut éviter de transmettre des maladies d'un élevage à l'autre. <span class="todo">[détails à fournir]</span></p></div>
+          <div><h3>Solution</h3><p>Système de traitement UV <span class="todo">[et ozone ?]</span> dimensionné pour <span class="todo">[débit m³/h]</span>, en eau de mer.</p></div>
+          <div><h3>Résultats</h3><p><span class="todo">[mortalité, abattement des pathogènes, chimie évitée…]</span> Une citation du client renforcerait la crédibilité.</p></div>
+        </div>
+        <a class="more" href="#">Lire l'étude de cas complète →</a>
+      </article>
       <div class="refs">
         <div class="ref"><b>Producteur mondial de saumon</b><span>Commande en 2026 pour la désinfection de l'eau d'un wellboat</span></div>
         <div class="ref"><b>Innovasea</b><span>Accord de distribution pour élargir l'accès au marché aquacole international</span></div>
@@ -438,10 +509,19 @@ th{background:var(--bg-alt)}
       <div class="contact" id="contact">
         <div>
           <h2>Faites dimensionner votre installation</h2>
-          <p>Indiquez-nous l'espèce, le débit, le type d'eau et le stade d'élevage : un ingénieur aquaculture vous propose une solution.</p>
+          <p>Remplissez ce formulaire : un ingénieur aquaculture vous propose une solution.</p>
         </div>
-        <a class="btn" href="#" style="background:#fff;color:#00314f">Demander une étude</a>
       </div>
+      <form class="sizing" action="#" onsubmit="return false" aria-label="Demande de dimensionnement">
+        <label>Espèce élevée<input type="text" placeholder="Ex. saumon, bar, crevette"></label>
+        <label>Usage<select><option>Écloserie / nurserie</option><option>RAS</option><option>Wellboat</option><option>Eau d'arrivée</option><option>Rejets</option></select></label>
+        <label>Type d'eau<select><option>Eau douce</option><option>Eau de mer</option><option>Eau saumâtre</option></select></label>
+        <label>Débit à traiter (m³/h)<input type="number" min="0" placeholder="Ex. 250"></label>
+        <label>Transmittance UV (%) <small style="font-weight:400;color:var(--muted)">si connue</small><input type="number" min="0" max="100" placeholder="Ex. 85"></label>
+        <label>E-mail professionnel<input type="email" placeholder="nom@entreprise.com"></label>
+        <label class="full">Votre projet<textarea rows="3" placeholder="Pathogènes ciblés, contraintes, délais…"></textarea></label>
+        <div class="full"><button class="btn" type="submit">Recevoir une proposition</button></div>
+      </form>
     </div>
   </section>
 </main>
