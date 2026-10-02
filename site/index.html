@@ -1,3 +1,54 @@
 <!doctype html>
-<title>Hello</title>
-<h1 style="color: #000000;">Hello, world!</h1>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Recherchez et comparez des vols au départ de Montpellier et Marseille pour trouver un tarif avantageux.">
+  <title>Cap Sud — Trouvez votre prochain vol</title>
+  <style>
+    :root{color-scheme:light;--sky:#d9f1ff;--ink:#111;--line:#dce5ec;--blue:#0969da}*{box-sizing:border-box}body{margin:0;color:var(--ink);background:#f7fafc;font-family:Arial,sans-serif;line-height:1.5}a{color:inherit}header,main,footer{max-width:1120px;margin:auto;padding:24px}header{display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{font-size:24px;font-weight:800;text-decoration:none;letter-spacing:-1px}.brand span{display:inline-grid;place-items:center;background:var(--sky);border-radius:12px;width:40px;height:40px;margin-right:8px}header a:last-child{font-size:14px}.hero{background:var(--sky);border-radius:28px;padding:48px 40px 95px;position:relative;overflow:hidden}.tag{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:700}h1{font-size:clamp(34px,5.6vw,60px);line-height:1.08;letter-spacing:-2px;max-width:750px;margin:20px 0}h1+p{max-width:620px;font-size:18px}.airports{display:flex;gap:10px;flex-wrap:wrap;margin-top:24px}.airports span{background:#ffffffa8;border-radius:30px;padding:9px 15px;font-size:13px}.search{position:relative;margin:-55px 24px 0;background:white;border:1px solid var(--line);padding:28px;border-radius:20px;box-shadow:0 14px 40px #12334b0c}h2{font-size:24px;letter-spacing:-.6px;margin:0 0 18px}.fields{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:16px}label{display:block;font-size:13px;font-weight:700}input,select,button{font:inherit}input,select{display:block;width:100%;border:1px solid #b5c3ce;border-radius:9px;padding:12px;margin-top:7px;background:white;color:black;min-height:48px}input:focus,select:focus,button:focus-visible,a:focus-visible{outline:3px solid #68baf0;outline-offset:3px}.controls{display:flex;justify-content:space-between;align-items:center;gap:20px;margin-top:20px}.controls label{display:flex;align-items:center;gap:8px;font-weight:400}.controls input{width:18px;min-height:18px;margin:0}button,.button{border:0;background:var(--blue);color:white;border-radius:10px;padding:14px 22px;font-weight:700;cursor:pointer;text-decoration:none;display:inline-block}.note{font-size:13px;margin:18px 0 0}.results{margin-top:32px;border:1px solid var(--line);background:white;border-radius:20px;padding:28px}.results[hidden]{display:none}.links{display:flex;flex-wrap:wrap;gap:12px}.secondary{background:#edf6fc;color:black}.explore{margin-top:52px}.cards{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.card{background:white;border:1px solid var(--line);border-radius:16px;padding:24px}.card .symbol{font-size:28px}.card h3{margin:14px 0 8px;font-size:18px}.card p{font-size:14px}.card a{font-size:14px;font-weight:700}.tips{margin-top:32px;border-radius:20px;padding:28px;background:#eaf2ed}.tips ul{padding-left:20px;display:grid;gap:10px;font-size:14px}footer{font-size:12px;border-top:1px solid var(--line);margin-top:36px}small{font-size:12px}#error{color:#a01414;font-size:14px} @media(max-width:800px){.fields{grid-template-columns:1fr 1fr}.cards{grid-template-columns:1fr}.hero{padding:32px 24px 85px}.search{margin-left:12px;margin-right:12px}}@media(max-width:480px){header,main,footer{padding:16px}header a:last-child{font-size:12px}.fields{grid-template-columns:1fr}.controls{align-items:stretch;flex-direction:column}.search{padding:20px;margin-left:8px;margin-right:8px}h1{letter-spacing:-1px}.results{padding:20px}}
+  </style>
+</head>
+<body>
+<header><a class="brand" href="./"><span aria-hidden="true">✈</span>Cap Sud</a><a href="#conseils">Les astuces petit prix</a></header>
+<main>
+  <section class="hero"><div class="tag">Un départ du Sud. Mille possibilités.</div><h1>Votre prochain voyage,<br>à prix plus doux.</h1><p>Comparez les vols depuis Montpellier et Marseille et trouvez le tarif qui vous convient.</p><div class="airports"><span>Montpellier · MPL</span><span>Marseille Provence · MRS</span></div></section>
+  <section class="search" aria-labelledby="search-title"><h2 id="search-title">Où voulez-vous partir ?</h2>
+    <form id="search-form">
+      <div class="fields"><label>Aéroport de départ<select id="origin"><option value="both">Comparer les deux aéroports</option><option value="MPL">Montpellier (MPL)</option><option value="MRS">Marseille Provence (MRS)</option></select></label>
+      <label>Destination<input id="destination" placeholder="Ex. Lisbonne, Londres…" maxlength="80" required></label>
+      <label>Date de départ<input id="departure" type="date" required></label><label id="return-label">Date de retour<input id="return" type="date" required></label></div>
+      <div class="controls"><label><input id="one-way" type="checkbox">Aller simple</label><button type="submit">Rechercher les vols →</button></div>
+      <p id="error" role="alert" hidden></p><p class="note">Comparez les tarifs actuels sur Google Flights. Prix et disponibilités à vérifier sur leurs sites, bagages et frais compris.</p>
+    </form>
+  </section>
+  <section class="results" id="results" aria-labelledby="results-title" aria-live="polite" hidden><h2 id="results-title">Votre recherche est prête</h2><p id="summary"></p><div id="comparison-links" class="links"></div><p class="note">Les liens ouvrent les comparateurs dans un nouvel onglet. Vérifiez les dates et les voyageurs avant de réserver. Aucun prix en direct n’est affiché ici.</p></section>
+  <section class="explore"><h2>Deux aéroports, plus de choix</h2><div class="cards"><article class="card"><div class="symbol" aria-hidden="true">☀</div><h3>Départ de Montpellier</h3><p>Consultez les destinations et les informations pratiques de l’aéroport Montpellier Méditerranée.</p><a href="https://www.montpellier.aeroport.fr/" target="_blank" rel="noopener noreferrer">Explorer l’aéroport ↗</a></article><article class="card"><div class="symbol" aria-hidden="true">✈</div><h3>Départ de Marseille</h3><p>Découvrez les possibilités de départ et préparez votre voyage depuis Marseille Provence.</p><a href="https://www.marseille.aeroport.fr/" target="_blank" rel="noopener noreferrer">Explorer l’aéroport ↗</a></article><article class="card"><div class="symbol" aria-hidden="true">↔</div><h3>Comparez avant de choisir</h3><p>Une même destination peut coûter moins cher depuis l’autre aéroport. Pensez aussi au coût du trajet et du parking.</p><a href="#search-title">Comparer les départs ↑</a></article></div></section>
+  <section class="tips" id="conseils"><h2>Quelques réflexes pour payer moins</h2><ul><li>Essayez plusieurs dates de départ et de retour : les tarifs varient d’un jour à l’autre.</li><li>Comparez Montpellier et Marseille, en ajoutant les frais de transport jusqu’à l’aéroport.</li><li>Vérifiez le prix total : bagage cabine, bagage en soute et choix du siège.</li><li>Activez une alerte de prix sur votre comparateur pour suivre l’évolution du tarif.</li></ul><small>Un tarif réduit dépend des dates et des disponibilités ; aucune réduction n’est garantie.</small></section>
+</main>
+<footer>Cap Sud · Recherche de vols au départ de Montpellier et Marseille. Les réservations se font directement auprès du comparateur ou de la compagnie de votre choix.</footer>
+<script>
+  const form=document.querySelector('#search-form'), departure=document.querySelector('#departure'), returnDate=document.querySelector('#return'), oneWay=document.querySelector('#one-way');
+  const localDate=date=>`${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+  const today=localDate(new Date()); departure.min=today; returnDate.min=today;
+  departure.addEventListener('change',()=>{returnDate.min=departure.value||today;if(returnDate.value&&returnDate.value<departure.value)returnDate.value='';});
+  oneWay.addEventListener('change',()=>{returnDate.disabled=oneWay.checked;returnDate.required=!oneWay.checked;document.querySelector('#return-label').hidden=oneWay.checked;});
+  form.addEventListener('submit',event=>{
+    event.preventDefault();const error=document.querySelector('#error');error.hidden=true;
+    const destination=document.querySelector('#destination').value.trim(), start=departure.value, end=returnDate.value;
+    if(!destination||start<today||(!oneWay.checked&&end<start)){error.textContent='Indiquez une destination et des dates valides. Le retour doit être le jour du départ ou après.';error.hidden=false;return;}
+    const selected=document.querySelector('#origin').value, airports=selected==='both'?['MPL','MRS']:[selected], names={MPL:'Montpellier',MRS:'Marseille'};
+    const format=value=>new Intl.DateTimeFormat('fr-FR',{dateStyle:'medium'}).format(new Date(value+'T12:00:00'));
+    document.querySelector('#summary').textContent=`Vers ${destination} · Départ le ${format(start)}${oneWay.checked?' · Aller simple':` · Retour le ${format(end)}`}`;
+    const links=document.querySelector('#comparison-links');links.replaceChildren();
+    for(const code of airports){
+      const query=`Vol ${oneWay.checked?'aller simple':'aller-retour'} de ${names[code]} (${code}) vers ${destination} départ ${start}${oneWay.checked?'':` retour ${end}`}`;
+      for(const [label,url] of [['Google Flights','https://www.google.com/travel/flights?q='+encodeURIComponent(query)]]){
+        const link=document.createElement('a');link.className='button'+(label==='KAYAK'?' secondary':'');link.href=url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=`${names[code]} · ${label} ↗`;links.append(link);
+      }
+    }
+    const results=document.querySelector('#results');results.hidden=false;results.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+</script>
+</body>
+</html>
