@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Traitement de l'eau en aquaculture : UV et ozone pour RAS, écloseries et wellboats | BIO-UV</title>
+<meta name="description" content="Désinfection UV et ozone pour l'aquaculture : écloseries, systèmes en recirculation (RAS) et wellboats. Moins de mortalité, sans chimie, en eau douce comme en eau de mer. Réacteurs fermés, canaux ouverts, générateurs d'ozone.">
+<link rel="canonical" href="https://www.bio-uv.com/fr/solutions/aquaculture/">
+<link rel="alternate" hreflang="fr" href="https://www.bio-uv.com/fr/solutions/aquaculture/">
+<link rel="alternate" hreflang="en" href="https://www.bio-uv.com/en/solutions/aquaculture/">
+<link rel="alternate" hreflang="x-default" href="https://www.bio-uv.com/en/solutions/aquaculture/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Aquaculture : désinfection UV et ozone | BIO-UV Group">
+<meta property="og:description" content="Des solutions UV et ozone pour les écloseries, les RAS et les wellboats, en eau douce comme en eau de mer.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    { "@type": "BreadcrumbList", "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Accueil", "item": "https://www.bio-uv.com/fr/" },
+      { "@type": "ListItem", "position": 2, "name": "Solutions", "item": "https://www.bio-uv.com/fr/solutions/" },
+      { "@type": "ListItem", "position": 3, "name": "Aquaculture", "item": "https://www.bio-uv.com/fr/solutions/aquaculture/" } ] },
+    { "@type": "FAQPage", "mainEntity": [
+      { "@type": "Question", "name": "UV ou ozone : que choisir pour un élevage aquacole ?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Les UV désinfectent l'eau sans laisser de résidu. L'ozone désinfecte aussi, mais en plus il oxyde la matière organique, clarifie l'eau et augmente l'oxygène dissous. En RAS, on combine souvent les deux : l'ozone pour la qualité de l'eau, puis les UV pour la désinfection finale et l'élimination de l'ozone résiduel." } },
+      { "@type": "Question", "name": "Les UV fonctionnent-ils en eau de mer ?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Oui. Les réacteurs sont conçus avec des matériaux résistants à la corrosion, pour l'eau douce comme pour l'eau de mer." } },
+      { "@type": "Question", "name": "Comment dimensionner un réacteur UV pour une écloserie ?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Le dimensionnement dépend du débit, de la transmittance UV de l'eau et des pathogènes ciblés, qui fixent la dose UV à atteindre. Nos ingénieurs font ce calcul à partir de vos données d'exploitation." } }
+    ] }
+  ]
+}
+</script>
+<style>
+:root{
+  --bg:#ffffff; --bg-alt:#f2f7fa; --ink:#0d2233; --muted:#4a6275; --line:#d7e3ea;
+  --brand:#0068a8; --brand-ink:#ffffff; --accent:#00a6a0; --card:#ffffff;
+  --hero1:#00314f; --hero2:#006aa0;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0b1720; --bg-alt:#11212d; --ink:#e6f0f5; --muted:#9db3c2; --line:#22394a;
+    --brand:#3fa9e8; --brand-ink:#04131c; --accent:#3fd0c9; --card:#132634;
+    --hero1:#021a2a; --hero2:#0a4569;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0b1720; --bg-alt:#11212d; --ink:#e6f0f5; --muted:#9db3c2; --line:#22394a;
+  --brand:#3fa9e8; --brand-ink:#04131c; --accent:#3fd0c9; --card:#132634;
+  --hero1:#021a2a; --hero2:#0a4569;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+a{color:var(--brand)}
+.wrap{max-width:1160px;margin:0 auto;padding:0 16px}
+.mock{background:#ffd84d;color:#3a2e00;text-align:center;font-size:13px;padding:6px 16px}
+header.top{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;height:64px}
+.logo{font-weight:800;font-size:20px;letter-spacing:.5px;color:var(--ink);text-decoration:none}
+.logo span{color:var(--brand)}
+.nav ul{display:flex;gap:22px;list-style:none;margin:0;padding:0}
+.nav ul a{color:var(--ink);text-decoration:none;font-weight:500;font-size:15px}
+.nav ul a:hover{color:var(--brand)}
+.lang{font-size:13px;color:var(--muted)}
+.btn{display:inline-block;background:var(--brand);color:var(--brand-ink);padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600}
+.btn.ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.6)}
+.hero{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;padding:88px 0 96px}
+.hero .eyebrow{text-transform:uppercase;letter-spacing:2px;font-size:13px;opacity:.8}
+.hero h1{font-size:clamp(30px,5vw,52px);line-height:1.12;margin:12px 0 18px;max-width:820px}
+.hero p{font-size:19px;max-width:680px;opacity:.92}
+.hero .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:-48px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;box-shadow:0 6px 20px rgba(0,40,70,.08)}
+.stat b{display:block;font-size:30px;color:var(--brand)}
+.stat span{color:var(--muted);font-size:14px}
+section{padding:80px 0}
+section.alt{background:var(--bg-alt)}
+h2{font-size:clamp(24px,3.4vw,34px);margin:0 0 10px}
+.lead{color:var(--muted);max-width:720px;margin:0 0 36px;font-size:17px}
+.grid{display:grid;gap:20px}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g2{grid-template-columns:repeat(2,1fr)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px;display:flex;flex-direction:column}
+.card h3{margin:10px 0 8px;font-size:19px}
+.card p{margin:0 0 14px;color:var(--muted);font-size:15px}
+.card a.more{margin-top:auto;font-weight:600;text-decoration:none}
+.ico{width:44px;height:44px;border-radius:10px;background:var(--bg-alt);display:grid;place-items:center;color:var(--brand)}
+.tag{display:inline-block;font-size:12px;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:1px}
+.tech{border-top:4px solid var(--brand)}
+.tech:nth-child(2){border-top-color:var(--accent)}
+.tech:nth-child(3){border-top-color:#5b7cfa}
+.tech:nth-child(4){border-top-color:#8a5cf6}
+.refs{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+.ref{border-left:3px solid var(--accent);padding:4px 0 4px 16px}
+.ref b{display:block}
+.ref span{color:var(--muted);font-size:14px}
+details{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px 20px;margin-bottom:12px}
+summary{cursor:pointer;font-weight:600}
+details p{color:var(--muted);margin:10px 0 0}
+.contact{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:#fff;border-radius:16px;padding:44px;display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap}
+.contact h2{color:#fff}
+.contact p{opacity:.9;margin:0}
+footer{border-top:1px solid var(--line);padding:48px 0 32px;color:var(--muted);font-size:14px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:24px}
+footer h4{color:var(--ink);margin:0 0 10px;font-size:14px}
+footer ul{list-style:none;padding:0;margin:0}
+footer li{margin:6px 0}
+footer a{color:var(--muted);text-decoration:none}
+@media (max-width:900px){
+  .nav ul{display:none}
+  .stats,.g4,.refs{grid-template-columns:repeat(2,1fr)}
+  .g3{grid-template-columns:1fr 1fr}
+  footer .cols{grid-template-columns:1fr 1fr}
+}
+@media (max-width:560px){
+  .stats,.g4,.g3,.g2,.refs{grid-template-columns:1fr}
+  .hero{padding:56px 0 80px}
+  section{padding:56px 0}
+  .contact{padding:28px}
+  .lang{display:none}
+}
+</style>
+<style>
+.stat b{font-size:22px;line-height:1.25}
+.crumbs{font-size:13px;opacity:.8;margin-bottom:14px}
+.crumbs a{color:#fff}
+.flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
+.step{position:relative;background:var(--card);border:1px solid var(--line);padding:18px;font-size:14px}
+.step:first-child{border-radius:12px 0 0 12px}.step:last-child{border-radius:0 12px 12px 0}
+.step b{display:block;margin-bottom:4px}
+.step.hl{background:var(--brand);color:var(--brand-ink);border-color:var(--brand)}
+.step.hl span{color:var(--brand-ink);opacity:.9}
+.step span{color:var(--muted)}
+table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:14px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--bg-alt)}
+.tablewrap{overflow-x:auto}
+.check{list-style:none;padding:0;margin:0}
+.check li{padding-left:26px;position:relative;margin:8px 0}
+.check li:before{content:"✓";position:absolute;left:0;color:var(--accent);font-weight:700}
+@media (max-width:900px){.flow{grid-template-columns:1fr}.step,.step:first-child,.step:last-child{border-radius:0}.step:first-child{border-radius:12px 12px 0 0}.step:last-child{border-radius:0 0 12px 12px}}
+</style>
+</head>
+<body>
+<div class="mock">Maquette de proposition – non officielle. Contenus à valider par BIO-UV Group.</div>
+
+<header class="top">
+  <div class="wrap nav">
+    <a class="logo" href="index.html">BIO<span>-UV</span> Group</a>
+    <nav aria-label="Navigation principale">
+      <ul>
+        <li><a href="index.html#applications">Applications</a></li>
+        <li><a href="index.html#technologies">Technologies</a></li>
+        <li><a href="index.html#produits">Produits</a></li>
+        <li><a href="index.html#references">Références</a></li>
+        <li><a href="index.html#conseils">Conseils</a></li>
+        <li><a href="index.html#groupe">Le groupe</a></li>
+      </ul>
+    </nav>
+    <span class="lang">FR · <a href="#">EN</a></span>
+    <a class="btn" href="#contact">Contact</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" aria-labelledby="h1">
+    <div class="wrap">
+      <nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a> › <a href="index.html#applications">Solutions</a> › Aquaculture</nav>
+      <div class="eyebrow">Aquaculture et pisciculture</div>
+      <h1 id="h1">Traitement de l'eau en aquaculture : désinfection UV et ozone pour écloseries, RAS et wellboats</h1>
+      <p>Des poissons, crustacés et mollusques en meilleure santé, une mortalité réduite et des rejets plus propres, sans produits chimiques, en eau douce comme en eau de mer.</p>
+      <div class="cta">
+        <a class="btn" href="#contact" style="background:#fff;color:#00314f">Dimensionner mon installation</a>
+        <a class="btn ghost" href="#usages">Voir les solutions</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap stats" aria-label="Bénéfices clés">
+    <div class="stat"><b>Sans chimie</b><span>ni résidu dans les bassins</span></div>
+    <div class="stat"><b>Eau douce et eau de mer</b><span>des matériaux résistants à la corrosion</span></div>
+    <div class="stat"><b>UV + ozone</b><span>une seule source pour les deux technologies</span></div>
+    <div class="stat"><b>Écloserie → wellboat</b><span>du naissain au transport du poisson vivant</span></div>
+  </div>
+
+  <section id="enjeux" aria-labelledby="h-enj">
+    <div class="wrap grid g2" style="gap:48px;align-items:center">
+      <div>
+        <span class="tag">Enjeux</span>
+        <h2 id="h-enj">La qualité de l'eau décide de la rentabilité de l'élevage</h2>
+        <p class="lead" style="margin-bottom:16px">Dans un élevage intensif, un seul pathogène peut décimer un lot. Il faut maîtriser la qualité de l'eau à chaque étape, sans fragiliser les animaux ni l'environnement.</p>
+        <ul class="check">
+          <li>Réduire la mortalité et le recours aux traitements médicamenteux</li>
+          <li>Garder une eau claire et bien oxygénée en recirculation</li>
+          <li>Respecter les exigences de biosécurité et de rejet</li>
+          <li>Limiter l'entretien et la consommation d'énergie</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="tag">Pathogènes ciblés</span>
+        <h3>Les UV et l'ozone inactivent :</h3>
+        <p>les bactéries (vibrioses, furonculose…), les virus, les parasites, les champignons et les algues présents dans l'eau d'appoint, l'eau recirculée ou l'eau rejetée.</p>
+        <p style="margin:0"><em>À compléter par BIO-UV avec les doses de référence par pathogène.</em></p>
+      </div>
+    </div>
+  </section>
+
+  <section id="usages" class="alt" aria-labelledby="h-us">
+    <div class="wrap">
+      <span class="tag">Solutions par usage</span>
+      <h2 id="h-us">Une solution pour chaque étape de l'élevage</h2>
+      <p class="lead">Chaque usage a sa page dédiée, optimisée pour sa propre recherche (« UV écloserie », « ozone RAS », « désinfection wellboat »…).</p>
+      <div class="grid g3">
+        <article class="card">
+          <div class="ico" aria-hidden="true">🥚</div>
+          <h3>Écloseries et nurseries</h3>
+          <p>Protection des œufs, des larves et du naissain, aux stades les plus sensibles. Désinfection UV de l'eau d'arrivée et de l'eau recirculée.</p>
+          <a class="more" href="#">UV pour écloserie →</a>
+        </article>
+        <article class="card">
+          <div class="ico" aria-hidden="true">🔁</div>
+          <h3>Systèmes en recirculation (RAS)</h3>
+          <p>L'ozone oxyde la matière organique, clarifie l'eau et augmente l'oxygène dissous. Les UV assurent ensuite la désinfection finale.</p>
+          <a class="more" href="#">Ozone et UV pour RAS →</a>
+        </article>
+        <article class="card">
+          <div class="ico" aria-hidden="true">🚢</div>
+          <h3>Wellboats</h3>
+          <p>Désinfection de l'eau entre deux chargements pour limiter la transmission de maladies d'un site à l'autre. Les systèmes sont compacts et conçus pour le milieu marin.</p>
+          <a class="more" href="#">Désinfection des wellboats →</a>
+        </article>
+        <article class="card">
+          <div class="ico" aria-hidden="true">🐟</div>
+          <h3>Pisciculture en eau douce</h3>
+          <p>Truite, esturgeon, perche… Traitement de l'eau d'appoint et des rejets dans les élevages en circuit ouvert ou semi-fermé.</p>
+          <a class="more" href="#">Pisciculture eau douce →</a>
+        </article>
+        <article class="card">
+          <div class="ico" aria-hidden="true">🦐</div>
+          <h3>Crustacés et coquillages</h3>
+          <p>Crevettes, huîtres, moules… Purification et sécurisation de l'eau de mer pour l'élevage et la dépuration.</p>
+          <a class="more" href="#">Conchyliculture et crevettes →</a>
+        </article>
+        <article class="card">
+          <div class="ico" aria-hidden="true">🌊</div>
+          <h3>Traitement des rejets</h3>
+          <p>Désinfection de l'eau rejetée pour protéger le milieu naturel et les populations sauvages.</p>
+          <a class="more" href="#">Rejets aquacoles →</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="ras" aria-labelledby="h-ras">
+    <div class="wrap">
+      <span class="tag">Exemple de chaîne de traitement</span>
+      <h2 id="h-ras">Où placer l'ozone et les UV dans une boucle RAS</h2>
+      <p class="lead">Un schéma type, à adapter à chaque installation. Les étapes en couleur sont celles que couvre BIO-UV Group.</p>
+      <div class="flow">
+        <div class="step"><b>1. Bassins d'élevage</b><span>Eau chargée en matière organique</span></div>
+        <div class="step"><b>2. Filtration mécanique</b><span>Tamis ou filtre à tambour</span></div>
+        <div class="step"><b>3. Biofiltre</b><span>Nitrification</span></div>
+        <div class="step hl"><b>4. Ozone</b><span>Oxydation, clarification, oxygène dissous</span></div>
+        <div class="step hl"><b>5. UV-C</b><span>Désinfection finale et élimination de l'ozone résiduel</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="technologies" class="alt" aria-labelledby="h-tech">
+    <div class="wrap">
+      <span class="tag">Technologies</span>
+      <h2 id="h-tech">UV ou ozone : comment choisir ?</h2>
+      <p class="lead">Les deux technologies se complètent. Ce tableau aide à les comparer ; nos ingénieurs vous conseillent ensuite selon votre installation.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Critère</th><th>Désinfection UV-C</th><th>Ozone</th></tr></thead>
+          <tbody>
+            <tr><td>Action principale</td><td>Inactive les micro-organismes</td><td>Désinfecte et oxyde les polluants organiques et minéraux</td></tr>
+            <tr><td>Résidu dans l'eau</td><td>Aucun</td><td>Résiduel à maîtriser (souvent éliminé par les UV en aval)</td></tr>
+            <tr><td>Clarté et couleur de l'eau</td><td>Pas d'effet</td><td>Améliore nettement la clarté</td></tr>
+            <tr><td>Oxygène dissous</td><td>Pas d'effet</td><td>Augmente l'oxygène dissous</td></tr>
+            <tr><td>Usages types</td><td>Écloseries, eau d'arrivée, rejets, wellboats</td><td>RAS, eau très chargée, wellboats</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:16px"><a href="#">Traitement UV en aquaculture →</a> · <a href="#">Traitement à l'ozone en aquaculture →</a></p>
+    </div>
+  </section>
+
+  <section id="produits" aria-labelledby="h-prod">
+    <div class="wrap">
+      <span class="tag">Gammes</span>
+      <h2 id="h-prod">Nos équipements pour l'aquaculture</h2>
+      <p class="lead">Chaque gamme a sa fiche produit en HTML (caractéristiques, débits, matériaux, FAQ), avec la fiche technique PDF à télécharger.</p>
+      <div class="grid g4">
+        <article class="card"><span class="tag">UV</span><h3>Réacteurs UV fermés</h3><p>Montés directement sur la canalisation, pour les écloseries, les RAS et les wellboats. Exemple : la gamme Integra (Triogen).</p><a class="more" href="#">Voir la gamme →</a></article>
+        <article class="card"><span class="tag">UV</span><h3>UV en canal ouvert</h3><p>Pour les gros débits en gravitaire, notamment le traitement des eaux d'arrivée et de rejet.</p><a class="more" href="#">Voir la gamme →</a></article>
+        <article class="card"><span class="tag">UV</span><h3>UV TTPE AM</h3><p>Un réacteur UV conçu pour l'eau de mer et les applications marines.</p><a class="more" href="#">Voir le produit →</a></article>
+        <article class="card"><span class="tag">Ozone</span><h3>Générateurs d'ozone</h3><p>Pour l'eau douce et l'eau de mer, en RAS comme à bord des wellboats. Une expertise apportée par Triogen.</p><a class="more" href="#">Voir la gamme →</a></article>
+      </div>
+    </div>
+  </section>
+
+  <section id="references" class="alt" aria-labelledby="h-ref">
+    <div class="wrap">
+      <span class="tag">Références et partenaires</span>
+      <h2 id="h-ref">Ils nous font confiance en aquaculture</h2>
+      <p class="lead">Chaque projet pourra avoir son étude de cas détaillée : contexte, installation, résultats chiffrés.</p>
+      <div class="refs">
+        <div class="ref"><b>Producteur mondial de saumon</b><span>Commande en 2026 pour la désinfection de l'eau d'un wellboat</span></div>
+        <div class="ref"><b>Innovasea</b><span>Accord de distribution pour élargir l'accès au marché aquacole international</span></div>
+        <div class="ref"><b>Triogen</b><span>Une marque du groupe, experte en ozone et en AOP</span></div>
+        <div class="ref"><b>Votre élevage ?</b><span>Contactez-nous pour une étude de cas</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="faq" aria-labelledby="h-faq">
+    <div class="wrap grid g2" style="align-items:start;gap:48px">
+      <div>
+        <span class="tag">Guides</span>
+        <h2 id="h-faq">Questions fréquentes en aquaculture</h2>
+        <p class="lead">Des articles qui répondent aux questions des aquaculteurs et renvoient vers les solutions.</p>
+        <ul>
+          <li><a href="#">Dose UV : comment la calculer pour son élevage ?</a></li>
+          <li><a href="#">Ozone en RAS : bonnes pratiques et sécurité</a></li>
+          <li><a href="#">Biosécurité des wellboats : la réglementation</a></li>
+          <li><a href="#">Transmittance UV de l'eau : pourquoi elle compte</a></li>
+        </ul>
+      </div>
+      <div>
+        <details open><summary>UV ou ozone : que choisir pour un élevage aquacole ?</summary><p>Les UV désinfectent l'eau sans laisser de résidu. L'ozone désinfecte aussi, mais en plus il oxyde la matière organique, clarifie l'eau et augmente l'oxygène dissous. En RAS, on combine souvent les deux : l'ozone pour la qualité de l'eau, puis les UV pour la désinfection finale et l'élimination de l'ozone résiduel.</p></details>
+        <details><summary>Les UV fonctionnent-ils en eau de mer ?</summary><p>Oui. Les réacteurs sont conçus avec des matériaux résistants à la corrosion, pour l'eau douce comme pour l'eau de mer.</p></details>
+        <details><summary>Comment dimensionner un réacteur UV pour une écloserie ?</summary><p>Le dimensionnement dépend du débit, de la transmittance UV de l'eau et des pathogènes ciblés, qui fixent la dose UV à atteindre. Nos ingénieurs font ce calcul à partir de vos données d'exploitation.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt" aria-label="Contact">
+    <div class="wrap">
+      <div class="contact" id="contact">
+        <div>
+          <h2>Faites dimensionner votre installation</h2>
+          <p>Indiquez-nous l'espèce, le débit, le type d'eau et le stade d'élevage : un ingénieur aquaculture vous propose une solution.</p>
+        </div>
+        <a class="btn" href="#" style="background:#fff;color:#00314f">Demander une étude</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap cols">
+    <div><b style="color:var(--ink)">BIO-UV Group</b><p>Traitement et désinfection de l'eau par UV-C, ozone, électrolyse au sel et AOP.<br>Lunel · Muret · Glasgow</p></div>
+    <div><h4>Aquaculture</h4><ul><li><a href="#">Écloseries</a></li><li><a href="#">RAS</a></li><li><a href="#">Wellboats</a></li><li><a href="#">Rejets</a></li></ul></div>
+    <div><h4>Technologies</h4><ul><li><a href="#">UV-C</a></li><li><a href="#">Ozone</a></li><li><a href="#">Électrolyse</a></li><li><a href="#">AOP</a></li></ul></div>
+    <div><h4>Groupe</h4><ul><li><a href="index.html">Accueil</a></li><li><a href="#">Investisseurs</a></li><li><a href="#">Actualités</a></li><li><a href="#">Contact</a></li></ul></div>
+  </div>
+</footer>
+</body>
+</html>
