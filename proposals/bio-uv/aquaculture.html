@@ -124,6 +124,33 @@ footer a{color:var(--muted);text-decoration:none}
 </style>
 <style>
 .stat b{font-size:22px;line-height:1.25}
+
+.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:40px;align-items:center}
+.hero-ill{width:100%;max-width:420px;justify-self:end;filter:drop-shadow(0 18px 30px rgba(0,0,0,.25))}
+.ill{display:block;width:calc(100% + 48px);height:auto;margin:-24px -24px 16px;border-radius:12px 12px 0 0;border-bottom:1px solid var(--line)}
+.ras-svg{width:100%;height:auto;display:block;margin-bottom:8px}
+.ras-svg text{font:600 15px system-ui,sans-serif;fill:var(--ink)}
+.ras-svg .sub{font:400 12px system-ui,sans-serif;fill:var(--muted)}
+.ras-svg .node{fill:var(--card);stroke:var(--line);stroke-width:1.5}
+.ras-svg .node.hl{fill:var(--brand);stroke:var(--brand)}
+.ras-svg .hl-t{fill:var(--brand-ink)}
+.ras-svg .arrow{stroke:var(--muted);stroke-width:2;fill:none}
+.flow.mob{display:none}
+.gallery{display:grid;grid-template-columns:2fr 1fr 1fr;gap:20px}
+.gallery figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.gallery figure.big{grid-row:span 2}
+.gallery svg{width:100%;height:auto;aspect-ratio:4/3;display:block}
+.gallery figure.big svg{flex:1;aspect-ratio:auto;min-height:240px}
+.gallery figcaption{padding:12px 16px;font-size:13px;color:var(--muted);border-top:1px solid var(--line)}
+.gallery figcaption b{color:var(--ink);display:block;font-size:14px}
+.ph{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;background:#ffd84d;color:#3a2e00;border-radius:4px;padding:2px 6px;margin-bottom:4px}
+.seo-img{margin-top:24px;font-size:14px;color:var(--muted)}
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr}.hero-ill{justify-self:center;max-width:340px}
+  .ras-svg{display:none}.flow.mob{display:grid}
+  .gallery{grid-template-columns:1fr 1fr}.gallery figure.big{grid-column:span 2;grid-row:auto}
+}
+@media (max-width:560px){.gallery{grid-template-columns:1fr}.gallery figure.big{grid-column:auto}}
 .crumbs{font-size:13px;opacity:.8;margin-bottom:14px}
 .crumbs a{color:#fff}
 .flow{display:grid;grid-template-columns:repeat(5,1fr);gap:0;counter-reset:s}
@@ -144,6 +171,16 @@ th{background:var(--bg-alt)}
 </style>
 </head>
 <body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="fish" viewBox="0 0 64 32"><path d="M4 16 C16 2 36 2 48 16 C36 30 16 30 4 16Z"/><path d="M46 16 L62 4 L58 16 L62 28Z"/><circle cx="14" cy="13" r="2.4" fill="#fff"/></symbol>
+    <symbol id="trout" viewBox="0 0 64 32"><path d="M4 16 C16 3 36 3 48 16 C36 29 16 29 4 16Z"/><path d="M46 16 L62 5 L58 16 L62 27Z"/><circle cx="13" cy="13" r="2.2" fill="#fff"/><g fill="#fff" opacity=".55"><circle cx="24" cy="11" r="1.3"/><circle cx="30" cy="14" r="1.3"/><circle cx="36" cy="11" r="1.3"/><circle cx="27" cy="18" r="1.3"/><circle cx="34" cy="19" r="1.3"/></g></symbol>
+    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4fc3e8"/><stop offset="1" stop-color="#0a5d8f"/></linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe7f5"/><stop offset="1" stop-color="#5fb4d9"/></linearGradient>
+    <linearGradient id="uvglow" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#b78cff" stop-opacity=".9"/><stop offset="1" stop-color="#b78cff" stop-opacity="0"/></linearGradient>
+    <radialGradient id="uvdot"><stop offset="0" stop-color="#e7d9ff"/><stop offset="1" stop-color="#8a5cf6"/></radialGradient>
+  </defs>
+</svg>
 <div class="mock">Maquette de proposition – non officielle. Contenus à valider par BIO-UV Group.</div>
 
 <header class="top">
@@ -166,7 +203,8 @@ th{background:var(--bg-alt)}
 
 <main>
   <section class="hero" aria-labelledby="h1">
-    <div class="wrap">
+    <div class="wrap hero-grid">
+      <div>
       <nav class="crumbs" aria-label="Fil d'Ariane"><a href="index.html">Accueil</a> › <a href="index.html#applications">Solutions</a> › Aquaculture</nav>
       <div class="eyebrow">Aquaculture et pisciculture</div>
       <h1 id="h1">Traitement de l'eau en aquaculture : désinfection UV et ozone pour écloseries, RAS et wellboats</h1>
@@ -175,6 +213,20 @@ th{background:var(--bg-alt)}
         <a class="btn" href="#contact" style="background:#fff;color:#00314f">Dimensionner mon installation</a>
         <a class="btn ghost" href="#usages">Voir les solutions</a>
       </div>
+      </div>
+      <svg class="hero-ill" viewBox="0 0 400 340" role="img" aria-label="Illustration : bassin d'élevage aquacole avec poissons, traité par un réacteur UV">
+  <rect x="10" y="60" width="380" height="270" rx="26" fill="url(#water)"/>
+  <path d="M10 92 Q57 76 105 92 T200 92 T295 92 T390 92 V86 Q342 70 295 86 T200 86 T105 86 T10 86Z" fill="#fff" opacity=".35"/>
+  <rect x="120" y="14" width="160" height="40" rx="20" fill="#e8eef2" stroke="#9db3c2"/>
+  <rect x="136" y="26" width="128" height="16" rx="8" fill="url(#uvdot)"/>
+  <text x="200" y="38" text-anchor="middle" font-family="system-ui" font-size="11" font-weight="700" fill="#2b0f66">UV-C</text>
+  <path d="M150 54 L110 200 L290 200 L250 54Z" fill="url(#uvglow)" opacity=".55"/>
+  <g fill="#ffb347"><use href="#fish" x="60" y="140" width="80" height="40"/><use href="#fish" x="230" y="220" width="96" height="48"/><use href="#fish" x="70" y="250" width="60" height="30"/></g>
+  <g fill="#ff8a65"><use href="#fish" x="250" y="130" width="64" height="32" transform="scale(-1 1) translate(-564 0)"/><use href="#fish" x="150" y="190" width="72" height="36" transform="scale(-1 1) translate(-372 0)"/></g>
+  <g fill="#fff" opacity=".7"><circle cx="340" cy="290" r="5"/><circle cx="348" cy="260" r="3.5"/><circle cx="336" cy="232" r="2.5"/><circle cx="40" cy="220" r="3.5"/><circle cx="48" cy="196" r="2.5"/></g>
+  <path d="M30 330 Q80 300 120 330Z M280 330 Q330 296 380 330Z" fill="#0b4a70"/>
+  <path d="M60 330 q-6 -40 6 -70 M70 330 q8 -30 -2 -55 M330 330 q-6 -36 6 -60" stroke="#2fb38a" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>
     </div>
   </section>
 
@@ -214,37 +266,37 @@ th{background:var(--bg-alt)}
       <p class="lead">Chaque usage a sa page dédiée, optimisée pour sa propre recherche (« UV écloserie », « ozone RAS », « désinfection wellboat »…).</p>
       <div class="grid g3">
         <article class="card">
-          <div class="ico" aria-hidden="true">🥚</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : œufs et larves en écloserie"><rect width="300" height="120" fill="url(#sea)"/><g fill="#ffcf73" stroke="#e59a2c" stroke-width="1.5"><circle cx="60" cy="70" r="9"/><circle cx="80" cy="62" r="9"/><circle cx="78" cy="84" r="9"/><circle cx="100" cy="74" r="9"/><circle cx="98" cy="96" r="9"/><circle cx="120" cy="86" r="9"/><circle cx="58" cy="92" r="9"/></g><g fill="#e59a2c"><circle cx="63" cy="68" r="2.2"/><circle cx="83" cy="60" r="2.2"/><circle cx="81" cy="82" r="2.2"/><circle cx="103" cy="72" r="2.2"/><circle cx="101" cy="94" r="2.2"/><circle cx="123" cy="84" r="2.2"/><circle cx="61" cy="90" r="2.2"/></g><g fill="#ff8a3d"><use href="#fish" x="170" y="40" width="34" height="17"/><use href="#fish" x="215" y="66" width="28" height="14"/><use href="#fish" x="182" y="86" width="24" height="12"/></g></svg>
           <h3>Écloseries et nurseries</h3>
           <p>Protection des œufs, des larves et du naissain, aux stades les plus sensibles. Désinfection UV de l'eau d'arrivée et de l'eau recirculée.</p>
           <a class="more" href="#">UV pour écloserie →</a>
         </article>
         <article class="card">
-          <div class="ico" aria-hidden="true">🔁</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : boucle de recirculation de l'eau (RAS)"><rect width="300" height="120" fill="url(#sea)"/><rect x="105" y="44" width="90" height="50" rx="8" fill="#0a5d8f"/><g fill="#ffb347"><use href="#fish" x="118" y="56" width="30" height="15"/><use href="#fish" x="152" y="70" width="28" height="14"/></g><path d="M95 69 C40 69 40 20 150 20 C260 20 260 69 205 69" stroke="#fff" stroke-width="5" fill="none" stroke-dasharray="10 7"/><path d="M200 60 L210 69 L200 78" stroke="#fff" stroke-width="5" fill="none"/><circle cx="80" cy="30" r="12" fill="#00a6a0"/><text x="80" y="35" text-anchor="middle" font-size="11" font-weight="700" fill="#fff" font-family="system-ui">O₃</text><circle cx="220" cy="30" r="12" fill="url(#uvdot)"/><text x="220" y="34" text-anchor="middle" font-size="9" font-weight="700" fill="#2b0f66" font-family="system-ui">UV</text></svg>
           <h3>Systèmes en recirculation (RAS)</h3>
           <p>L'ozone oxyde la matière organique, clarifie l'eau et augmente l'oxygène dissous. Les UV assurent ensuite la désinfection finale.</p>
           <a class="more" href="#">Ozone et UV pour RAS →</a>
         </article>
         <article class="card">
-          <div class="ico" aria-hidden="true">🚢</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : wellboat transportant des poissons vivants"><rect width="300" height="120" fill="url(#sea)"/><path d="M0 92 Q37 84 75 92 T150 92 T225 92 T300 92 V120 H0Z" fill="#0a5d8f"/><path d="M40 70 H250 L230 100 H62Z" fill="#e8eef2" stroke="#4a6275" stroke-width="2"/><rect x="90" y="74" width="110" height="20" rx="4" fill="#4fc3e8"/><g fill="#ffb347"><use href="#fish" x="100" y="78" width="22" height="11"/><use href="#fish" x="135" y="80" width="22" height="11"/><use href="#fish" x="170" y="77" width="22" height="11"/></g><rect x="200" y="40" width="40" height="30" fill="#e8eef2" stroke="#4a6275" stroke-width="2"/><rect x="208" y="48" width="10" height="8" fill="#4fc3e8"/><rect x="224" y="48" width="10" height="8" fill="#4fc3e8"/><rect x="214" y="26" width="6" height="14" fill="#c0392b"/></svg>
           <h3>Wellboats</h3>
           <p>Désinfection de l'eau entre deux chargements pour limiter la transmission de maladies d'un site à l'autre. Les systèmes sont compacts et conçus pour le milieu marin.</p>
           <a class="more" href="#">Désinfection des wellboats →</a>
         </article>
         <article class="card">
-          <div class="ico" aria-hidden="true">🐟</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : truites dans une rivière d'eau douce"><rect width="300" height="120" fill="url(#sea)"/><path d="M0 30 Q75 18 150 30 T300 30" stroke="#fff" stroke-width="3" fill="none" opacity=".7"/><g fill="#6d8f7a"><use href="#trout" x="40" y="40" width="90" height="45"/><use href="#trout" x="170" y="62" width="70" height="35"/></g><g fill="#8a9aa6"><ellipse cx="30" cy="112" rx="26" ry="10"/><ellipse cx="140" cy="116" rx="34" ry="9"/><ellipse cx="260" cy="112" rx="30" ry="11"/></g></svg>
           <h3>Pisciculture en eau douce</h3>
           <p>Truite, esturgeon, perche… Traitement de l'eau d'appoint et des rejets dans les élevages en circuit ouvert ou semi-fermé.</p>
           <a class="more" href="#">Pisciculture eau douce →</a>
         </article>
         <article class="card">
-          <div class="ico" aria-hidden="true">🦐</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : crevette et huîtres en eau de mer"><rect width="300" height="120" fill="url(#sea)"/><g fill="none" stroke="#ff7a59" stroke-width="12" stroke-linecap="round"><path d="M70 50 C110 30 150 50 140 80 C132 100 105 98 100 86"/></g><g stroke="#ff7a59" stroke-width="2"><path d="M70 50 L40 30 M72 46 L48 20"/><path d="M95 88 L88 104 M110 92 L106 108 M125 88 L126 104"/></g><circle cx="76" cy="46" r="3" fill="#333"/><g fill="#cfc6b8" stroke="#8b7f6e" stroke-width="2"><path d="M190 100 C180 70 220 58 250 72 C272 84 262 106 230 108 C210 110 194 108 190 100Z"/><path d="M220 112 C214 92 240 84 262 94 C278 102 272 116 250 116Z"/></g><path d="M200 90 Q225 78 250 86" stroke="#8b7f6e" fill="none"/></svg>
           <h3>Crustacés et coquillages</h3>
           <p>Crevettes, huîtres, moules… Purification et sécurisation de l'eau de mer pour l'élevage et la dépuration.</p>
           <a class="more" href="#">Conchyliculture et crevettes →</a>
         </article>
         <article class="card">
-          <div class="ico" aria-hidden="true">🌊</div>
+          <svg class="ill" viewBox="0 0 300 120" role="img" aria-label="Illustration : eau rejetée désinfectée par UV avant retour au milieu naturel"><rect width="300" height="120" fill="url(#sea)"/><rect x="0" y="40" width="130" height="24" fill="#9db3c2"/><rect x="60" y="34" width="50" height="36" rx="6" fill="#e8eef2" stroke="#4a6275" stroke-width="2"/><rect x="68" y="46" width="34" height="12" rx="6" fill="url(#uvdot)"/><path d="M130 52 C160 52 165 80 175 96" stroke="#4fc3e8" stroke-width="12" fill="none"/><path d="M120 100 Q160 90 200 100 T300 100 V120 H120Z" fill="#0a5d8f"/><g fill="#2fb38a"><path d="M240 100 q-4 -24 4 -40 q6 18 -4 40Z"/><path d="M262 100 q-4 -18 4 -30 q6 14 -4 30Z"/></g><g fill="#ffb347"><use href="#fish" x="210" y="104" width="26" height="13"/></g></svg>
           <h3>Traitement des rejets</h3>
           <p>Désinfection de l'eau rejetée pour protéger le milieu naturel et les populations sauvages.</p>
           <a class="more" href="#">Rejets aquacoles →</a>
@@ -258,7 +310,23 @@ th{background:var(--bg-alt)}
       <span class="tag">Exemple de chaîne de traitement</span>
       <h2 id="h-ras">Où placer l'ozone et les UV dans une boucle RAS</h2>
       <p class="lead">Un schéma type, à adapter à chaque installation. Les étapes en couleur sont celles que couvre BIO-UV Group.</p>
-      <div class="flow">
+      <svg class="ras-svg" viewBox="0 0 1000 250" role="img" aria-label="Schéma d'une boucle RAS : bassins, filtration mécanique, biofiltre, ozone, UV-C, retour aux bassins">
+  <defs><marker id="ah" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10Z" fill="var(--muted)"/></marker></defs>
+  <rect class="node" x="10" y="40" width="170" height="110" rx="14"/>
+  <rect x="26" y="88" width="138" height="46" rx="8" fill="url(#water)"/><g fill="#ffb347"><use href="#fish" x="40" y="96" width="34" height="17"/><use href="#fish" x="96" y="108" width="30" height="15"/></g>
+  <text x="95" y="68" text-anchor="middle">1. Bassins</text>
+  <rect class="node" x="210" y="40" width="170" height="110" rx="14"/><text x="295" y="68" text-anchor="middle">2. Filtration</text><text class="sub" x="295" y="88" text-anchor="middle">Filtre à tambour</text>
+  <g stroke="var(--muted)" stroke-width="2" fill="none"><circle cx="295" cy="120" r="20"/><path d="M281 106 L309 134 M309 106 L281 134 M275 120 H315"/></g>
+  <rect class="node" x="410" y="40" width="170" height="110" rx="14"/><text x="495" y="68" text-anchor="middle">3. Biofiltre</text><text class="sub" x="495" y="88" text-anchor="middle">Nitrification</text>
+  <g fill="#2fb38a"><circle cx="465" cy="115" r="6"/><circle cx="480" cy="127" r="6"/><circle cx="495" cy="115" r="6"/><circle cx="510" cy="127" r="6"/><circle cx="525" cy="115" r="6"/></g>
+  <rect class="node hl" x="610" y="40" width="170" height="110" rx="14"/><text class="hl-t" x="695" y="68" text-anchor="middle">4. Ozone</text><text class="sub hl-t" x="695" y="88" text-anchor="middle">Oxydation · O₂ dissous</text>
+  <g fill="#fff" opacity=".85"><circle cx="680" cy="122" r="7"/><circle cx="700" cy="112" r="5"/><circle cx="712" cy="128" r="6"/></g>
+  <rect class="node hl" x="810" y="40" width="170" height="110" rx="14"/><text class="hl-t" x="895" y="68" text-anchor="middle">5. UV-C</text><text class="sub hl-t" x="895" y="88" text-anchor="middle">Désinfection finale</text>
+  <rect x="845" y="110" width="100" height="22" rx="11" fill="url(#uvdot)"/>
+  <g class="arrow" marker-end="url(#ah)"><path d="M182 95 H206"/><path d="M382 95 H406"/><path d="M582 95 H606"/><path d="M782 95 H806"/><path d="M895 152 V210 H95 V156"/></g>
+  <text class="sub" x="500" y="232" text-anchor="middle">Eau désinfectée et oxygénée renvoyée vers les bassins</text>
+</svg>
+      <div class="flow mob">
         <div class="step"><b>1. Bassins d'élevage</b><span>Eau chargée en matière organique</span></div>
         <div class="step"><b>2. Filtration mécanique</b><span>Tamis ou filtre à tambour</span></div>
         <div class="step"><b>3. Biofiltre</b><span>Nitrification</span></div>
@@ -300,6 +368,33 @@ th{background:var(--bg-alt)}
         <article class="card"><span class="tag">UV</span><h3>UV TTPE AM</h3><p>Un réacteur UV conçu pour l'eau de mer et les applications marines.</p><a class="more" href="#">Voir le produit →</a></article>
         <article class="card"><span class="tag">Ozone</span><h3>Générateurs d'ozone</h3><p>Pour l'eau douce et l'eau de mer, en RAS comme à bord des wellboats. Une expertise apportée par Triogen.</p><a class="more" href="#">Voir la gamme →</a></article>
       </div>
+    </div>
+  </section>
+
+
+  <section id="galerie" aria-labelledby="h-gal">
+    <div class="wrap">
+      <span class="tag">En images</span>
+      <h2 id="h-gal">Nos solutions sur le terrain</h2>
+      <p class="lead">Emplacements prévus pour les photos de BIO-UV. Chaque légende indique la photo à fournir et le texte alternatif (attribut alt) conseillé pour le référencement.</p>
+      <div class="gallery">
+        <figure class="big"><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Emplacement photo : réacteurs UV installés dans un élevage en recirculation"><rect width="400" height="300" fill="url(#sea)"/><rect x="0" y="200" width="400" height="100" fill="#9db3c2"/><g><rect x="40" y="80" width="70" height="140" rx="12" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="55" y="100" width="40" height="100" rx="8" fill="url(#uvdot)" opacity=".8"/></g><g><rect x="150" y="80" width="70" height="140" rx="12" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="165" y="100" width="40" height="100" rx="8" fill="url(#uvdot)" opacity=".8"/></g><g><rect x="260" y="80" width="70" height="140" rx="12" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="275" y="100" width="40" height="100" rx="8" fill="url(#uvdot)" opacity=".8"/></g><rect x="0" y="230" width="400" height="16" fill="#4a6275"/></svg>
+          <figcaption><span class="ph">Photo à fournir</span><b>Réacteurs UV dans une salle RAS</b>alt : « Réacteurs UV BIO-UV installés sur une boucle de recirculation aquacole »</figcaption>
+        </figure>
+        <figure><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Emplacement photo : bacs d'écloserie"><rect width="400" height="300" fill="url(#sea)"/><ellipse cx="100" cy="190" rx="80" ry="40" fill="#0a5d8f"/><ellipse cx="100" cy="182" rx="80" ry="34" fill="url(#water)"/><ellipse cx="300" cy="190" rx="80" ry="40" fill="#0a5d8f"/><ellipse cx="300" cy="182" rx="80" ry="34" fill="url(#water)"/><g fill="#ffcf73"><circle cx="70" cy="180" r="5"/><circle cx="88" cy="188" r="5"/><circle cx="106" cy="180" r="5"/><circle cx="124" cy="188" r="5"/></g><g fill="#ffb347"><use href="#fish" x="270" y="172" width="40" height="20"/></g></svg>
+          <figcaption><span class="ph">Photo à fournir</span><b>Écloserie</b>alt : « Bacs d'écloserie protégés par désinfection UV »</figcaption>
+        </figure>
+        <figure><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Emplacement photo : wellboat en mer"><rect width="400" height="300" fill="url(#sea)"/><path d="M0 210 Q50 198 100 210 T200 210 T300 210 T400 210 V300 H0Z" fill="#0a5d8f"/><path d="M50 170 H350 L320 215 H80Z" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="250" y="120" width="60" height="50" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="262" y="132" width="14" height="12" fill="#4fc3e8"/><rect x="284" y="132" width="14" height="12" fill="#4fc3e8"/></svg>
+          <figcaption><span class="ph">Photo à fournir</span><b>Wellboat</b>alt : « Wellboat équipé d'un système de désinfection UV et ozone »</figcaption>
+        </figure>
+        <figure><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Emplacement photo : générateur d'ozone"><rect width="400" height="300" fill="url(#sea)"/><rect x="130" y="70" width="140" height="170" rx="10" fill="#e8eef2" stroke="#4a6275" stroke-width="3"/><rect x="150" y="90" width="100" height="40" rx="6" fill="#0d2233"/><text x="200" y="117" text-anchor="middle" font-family="system-ui" font-size="18" font-weight="700" fill="#3fd0c9">O₃</text><circle cx="170" cy="160" r="8" fill="#2fb38a"/><circle cx="200" cy="160" r="8" fill="#ffb347"/><rect x="150" y="190" width="100" height="10" rx="5" fill="#9db3c2"/></svg>
+          <figcaption><span class="ph">Photo à fournir</span><b>Générateur d'ozone Triogen</b>alt : « Générateur d'ozone pour l'aquaculture en eau de mer »</figcaption>
+        </figure>
+        <figure><svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Emplacement photo : technicien contrôlant la qualité de l'eau"><rect width="400" height="300" fill="url(#sea)"/><rect x="40" y="170" width="320" height="90" rx="10" fill="url(#water)"/><circle cx="150" cy="95" r="26" fill="#f2c9a0"/><path d="M110 170 Q150 120 190 170Z" fill="#0068a8"/><rect x="190" y="120" width="16" height="60" rx="4" fill="#e8eef2" stroke="#4a6275" stroke-width="2"/><rect x="194" y="150" width="8" height="26" fill="#4fc3e8"/><g fill="#ffb347"><use href="#fish" x="250" y="200" width="50" height="25"/></g></svg>
+          <figcaption><span class="ph">Photo à fournir</span><b>Suivi de la qualité de l'eau</b>alt : « Technicien BIO-UV contrôlant la qualité de l'eau d'un élevage »</figcaption>
+        </figure>
+      </div>
+      <p class="seo-img">Pour le référencement des photos : format WebP, moins de 200 Ko, nom de fichier descriptif (ex. <code>reacteur-uv-ras-aquaculture.webp</code>), texte alternatif renseigné et chargement différé (<code>loading="lazy"</code>).</p>
     </div>
   </section>
 
